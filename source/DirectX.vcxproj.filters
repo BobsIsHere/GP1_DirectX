@@ -8,9 +8,11 @@
     <Filter Include="Misc">
       <UniqueIdentifier>{72056cb6-72a2-42b7-b05e-376f1ddd957e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Files">
+      <UniqueIdentifier>{47a6614b-6a35-4f4a-bab7-faa33504fb50}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Renderer.h" />
     <ClInclude Include="Vector3.h">
       <Filter>Math</Filter>
     </ClInclude>
@@ -32,14 +34,23 @@
     <ClInclude Include="Vector2.h">
       <Filter>Math</Filter>
     </ClInclude>
-    <ClInclude Include="pch.h" />
     <ClInclude Include="ColorRGB.h">
       <Filter>Math</Filter>
     </ClInclude>
+    <ClInclude Include="Effect.h">
+      <Filter>Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Vector3.cpp">
       <Filter>Math</Filter>
     </ClCompile>
@@ -55,6 +66,20 @@
     <ClCompile Include="Vector2.cpp">
       <Filter>Math</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="Effect.cpp">
+      <Filter>Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -6,6 +6,7 @@ struct SDL_Surface;
 namespace dae
 {
 	class Mesh;
+	class Camera;
 
 	class Renderer final
 	{
@@ -38,6 +39,7 @@ namespace dae
 		ID3D11RenderTargetView* m_pRenderTargetView;
 
 		Mesh* m_pMesh;
+		Camera* m_pCamera;
 
 		//DIRECTX
 		HRESULT InitializeDirectX();

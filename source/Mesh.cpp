@@ -80,13 +80,12 @@ dae::Mesh::~Mesh()
 	delete m_pEffect;
 	m_pEffect = nullptr;
 
-	m_pTechnique->Release();
 	m_pInputLayout->Release();
 	m_pVertexBuffer->Release();
 	m_pIndexBuffer->Release();
 }
 
-void dae::Mesh::Render(ID3D11DeviceContext* pDeviceContext)
+void dae::Mesh::Render(ID3D11DeviceContext* pDeviceContext, Matrix worldViewProjectionMatrix)
 {
 	//1. Set Primitive Topology
 	pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -98,6 +97,7 @@ void dae::Mesh::Render(ID3D11DeviceContext* pDeviceContext)
 	constexpr UINT stride = sizeof(Vertex_PosCol);
 	constexpr UINT offset = 0;
 	pDeviceContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
+	m_pEffect->GetMatWorldViewProjVariable()->SetMatrix(reinterpret_cast<float*>(&worldViewProjectionMatrix));
 
 	//4. Set Index Buffer
 	pDeviceContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);

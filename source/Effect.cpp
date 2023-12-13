@@ -5,22 +5,33 @@ Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetFile)
 {
 	m_pEffect = LoadEffect(pDevice, assetFile);
 	m_pTechnique = m_pEffect->GetTechniqueByName("DefaultTechnique");
-
 	if (!m_pTechnique->IsValid())
 	{
 		std::wcout << L"Technique not valid\n";
+	}
+
+	m_pMatWorldViewProjVariable = m_pEffect->GetVariableByName("gWorldViewProj")->AsMatrix();
+	if (!m_pMatWorldViewProjVariable->IsValid())
+	{
+		std::wcout << L"WorldViewProjection matrix not valid\n";
 	}
 }
 
 Effect::~Effect()
 {
-	m_pEffect->Release();
 	m_pTechnique->Release();
+	m_pMatWorldViewProjVariable->Release();
+	m_pEffect->Release();
 }
 
 ID3DX11EffectTechnique* Effect::GetTechnique() const
 {
 	return m_pTechnique;
+}
+
+ID3DX11EffectMatrixVariable* Effect::GetMatWorldViewProjVariable() const
+{
+	return m_pMatWorldViewProjVariable;
 }
 
 ID3DX11Effect* Effect::LoadEffect(ID3D11Device* pDevice, const std::wstring& assetFile)

@@ -49,6 +49,9 @@
     <ClInclude Include="Renderer.h">
       <Filter>Files</Filter>
     </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Vector3.cpp">
@@ -79,6 +82,9 @@
       <Filter>Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
+      <Filter>Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
       <Filter>Files</Filter>
     </ClCompile>
   </ItemGroup>

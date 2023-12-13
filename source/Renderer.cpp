@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Renderer.h"
 #include "Mesh.h"
+#include "Camera.h"
 
 //DirectX headers
 #include <dxgi.h>
@@ -28,14 +29,21 @@ namespace dae {
 			std::cout << "DirectX initialization failed!\n";
 		}
 
-		std::vector<Vertex_PosCol> vertices{
+		/*std::vector<Vertex_PosCol> vertices{
 			{{0.f, 0.5f, 0.5f}, {1.f, 0.f, 0.f}},
 			{{0.5f, -0.5f, 0.5f}, {0.f, 0.f, 1.f}},
 			{{-0.5f, -0.5f, 0.5f}, {0.f, 1.f, 0.f}}
+		};*/
+
+		std::vector<Vertex_PosCol> vertices{ 
+			{{0.f, 3.f, 2.f}, {1.f, 0.f, 0.f}},
+			{{3.f, -3.f, 2.f}, {0.f, 0.f, 1.f}},
+			{{-3.f, -3.f, 2.f}, {0.f, 1.f, 0.f}}
 		};
 		std::vector<uint32_t> indices{ 0, 1, 2 };
 
 		m_pMesh = new Mesh{ m_pDevice, vertices, indices };
+		m_pCamera = new Camera{ 45.f, float(m_Width) / m_Height, {0.f, 0.f, -10.f} };
 	}
 
 	Renderer::~Renderer()
@@ -56,12 +64,14 @@ namespace dae {
 		m_pRenderTargetView->Release();
 
 		delete m_pMesh;
+		delete m_pCamera;
 		m_pMesh = nullptr;
+		m_pCamera = nullptr;
 	}
 
 	void Renderer::Update(const Timer* pTimer)
 	{
-
+		m_pCamera->Update(pTimer);
 	}
 
 	void Renderer::Render() const
@@ -75,7 +85,9 @@ namespace dae {
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
 		//2. SET PIPELINE + INVOKE DRAW CALLS (= RENDER)
-		m_pMesh->Render(m_pDeviceContext);
+		//first make view projection matrix
+		const Matrix worldViewProjectionMatrix{ m_pCamera->GetViewMatrix() * m_pCamera->GetProjectionMatrix() };
+		m_pMesh->Render(m_pDeviceContext, worldViewProjectionMatrix);
 
 		//3. PRESENT BACKBUFFER (SWAP)
 		m_pSwapChain->Present(0, 0);
@@ -205,5 +217,8 @@ namespace dae {
 		m_pDeviceContext->RSSetViewports(1, &viewport);
 
 		return result;
+
+		//hidden resource leak of DXGI factory
+		pDxgiFactory->Release();
 	}
 }

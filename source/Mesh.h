@@ -17,13 +17,13 @@ namespace dae
 		~Mesh();
 
 		//Rule of Five
-		Mesh(const Mesh&)				 = delete;
-		Mesh(Mesh&&) noexcept			 = delete;
-		Mesh& operator=(const Mesh&)	 = delete;
-		Mesh& operator=(Mesh&&) noexcept = delete;
+		Mesh(const Mesh& other)				   = delete;
+		Mesh& operator=(const Mesh& other)	   = delete;
+		Mesh(Mesh&& other) noexcept			   = delete;
+		Mesh& operator=(Mesh&& other) noexcept = delete;
 
 		//Member Functions
-		void Render(ID3D11DeviceContext* pDeviceContext);
+		void Render(ID3D11DeviceContext* pDeviceContext, Matrix worldViewProjectionMatrix);
 
 	private:
 		//Member variables

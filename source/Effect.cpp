@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "Effect.h"
+#include "Texture.h"
+
+using namespace dae;
 
 Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetFile)
 {
@@ -15,12 +18,19 @@ Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetFile)
 	{
 		std::wcout << L"WorldViewProjection matrix not valid\n";
 	}
+
+	m_pDiffuseMapVariable = m_pEffect->GetVariableByName("gDiffuseMap")->AsShaderResource();
+	if (!m_pDiffuseMapVariable->IsValid())
+	{
+		std::wcout << L"DiffuseMapVariable not valid\n";
+	}
 }
 
 Effect::~Effect()
 {
 	m_pTechnique->Release();
 	m_pMatWorldViewProjVariable->Release();
+	m_pDiffuseMapVariable->Release();
 	m_pEffect->Release();
 }
 
@@ -32,6 +42,14 @@ ID3DX11EffectTechnique* Effect::GetTechnique() const
 ID3DX11EffectMatrixVariable* Effect::GetMatWorldViewProjVariable() const
 {
 	return m_pMatWorldViewProjVariable;
+}
+
+void Effect::SetDiffuseMap(Texture* pDiffuseTexture)
+{
+	if (m_pDiffuseMapVariable)
+	{
+		m_pDiffuseMapVariable->SetResource(pDiffuseTexture->GetShaderResourceView());
+	}
 }
 
 ID3DX11Effect* Effect::LoadEffect(ID3D11Device* pDevice, const std::wstring& assetFile)

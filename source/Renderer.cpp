@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "Mesh.h"
 #include "Camera.h"
+#include "Texture.h"
 
 //DirectX headers
 #include <dxgi.h>
@@ -29,20 +30,26 @@ namespace dae {
 			std::cout << "DirectX initialization failed!\n";
 		}
 
-		/*std::vector<Vertex_PosCol> vertices{
-			{{0.f, 0.5f, 0.5f}, {1.f, 0.f, 0.f}},
-			{{0.5f, -0.5f, 0.5f}, {0.f, 0.f, 1.f}},
-			{{-0.5f, -0.5f, 0.5f}, {0.f, 1.f, 0.f}}
-		};*/
+		m_pTexture = Texture::LoadTexture("Resources/uv_grid_2.png", m_pDevice);
 
 		std::vector<Vertex_PosCol> vertices{ 
-			{{0.f, 3.f, 2.f}, {1.f, 0.f, 0.f}},
-			{{3.f, -3.f, 2.f}, {0.f, 0.f, 1.f}},
-			{{-3.f, -3.f, 2.f}, {0.f, 1.f, 0.f}}
+			//Position          //Colour          //UV
+			{{-3.f, 3.f, -2.f} ,{1.f, 1.f, 1.f}, {0.0f, 0.0f}},
+			{{0.f, 3.f, -2.f} ,{1.f, 1.f, 1.f},	{0.5f, 0.0f}},
+			{{3.f, 3.0f, -2.f} ,{1.f, 1.f, 1.f}, {1.0f, 0.f}},
+			{{-3.f, 0.f, -2.f} ,{1.f, 1.f, 1.f}, {0.f, 0.5f}},
+			{{0.f, 0.f, -2.f} ,{1.f, 1.f, 1.f},	{0.5f, 0.5f}},
+			{{3.f, 0.f, -2.f} ,{1.f, 1.f, 1.f},	{1.0f, 0.5f}},
+			{{-3.f, -3.f, -2.f} ,{1.f, 1.f, 1.f}, {0.0f, 1.0f}},
+			{{0.f, -3.f, -2.f} ,{1.f, 1.f, 1.f}, {0.5f, 1.0f}},
+			{{3.f, -3.f, -2.f} ,{1.f, 1.f, 1.f}, {1.0f, 1.0f}}
 		};
-		std::vector<uint32_t> indices{ 0, 1, 2 };
+		std::vector<uint32_t> indices{ 3, 0, 1,    1, 4, 3,    4, 1, 2,
+									   2, 5, 4,    6, 3, 4,    4, 7, 6,
+									   7, 4, 5,    5, 8, 7 };
 
 		m_pMesh = new Mesh{ m_pDevice, vertices, indices };
+		m_pMesh->SetDiffuseMap(m_pTexture);
 		m_pCamera = new Camera{ 45.f, float(m_Width) / m_Height, {0.f, 0.f, -10.f} };
 	}
 
@@ -65,8 +72,10 @@ namespace dae {
 
 		delete m_pMesh;
 		delete m_pCamera;
+		delete m_pTexture;
 		m_pMesh = nullptr;
 		m_pCamera = nullptr;
+		m_pTexture = nullptr;
 	}
 
 	void Renderer::Update(const Timer* pTimer)
@@ -151,8 +160,8 @@ namespace dae {
 			return result;
 		}
 
-		////3. Create DepthStencil (DS) and DepthStencilView (DSV)
-		////=====
+		//3. Create DepthStencil (DS) and DepthStencilView (DSV)
+		//=====
 		D3D11_TEXTURE2D_DESC depthStencilDesc{};
 		depthStencilDesc.Width = m_Width; 
 		depthStencilDesc.Height = m_Height; 

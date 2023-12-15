@@ -7,6 +7,7 @@ namespace dae
 	{
 		Vector3 position{};
 		ColorRGB color{};
+		Vector2 uv{};
 	};
 
 
@@ -24,6 +25,7 @@ namespace dae
 
 		//Member Functions
 		void Render(ID3D11DeviceContext* pDeviceContext, Matrix worldViewProjectionMatrix);
+		void SetDiffuseMap(Texture* pDiffuseTexture);
 
 	private:
 		//Member variables

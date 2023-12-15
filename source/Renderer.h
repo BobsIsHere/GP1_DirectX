@@ -7,6 +7,7 @@ namespace dae
 {
 	class Mesh;
 	class Camera;
+	class Texture;
 
 	class Renderer final
 	{
@@ -14,10 +15,10 @@ namespace dae
 		Renderer(SDL_Window* pWindow);
 		~Renderer();
 
-		Renderer(const Renderer&) = delete;
-		Renderer(Renderer&&) noexcept = delete;
-		Renderer& operator=(const Renderer&) = delete;
-		Renderer& operator=(Renderer&&) noexcept = delete;
+		Renderer(const Renderer& other)                = delete;
+		Renderer& operator=(const Renderer& other)     = delete;
+		Renderer(Renderer&& other) noexcept            = delete;
+		Renderer& operator=(Renderer&& other) noexcept = delete;
 
 		void Update(const Timer* pTimer);
 		void Render() const;
@@ -40,6 +41,7 @@ namespace dae
 
 		Mesh* m_pMesh;
 		Camera* m_pCamera;
+		Texture* m_pTexture;
 
 		//DIRECTX
 		HRESULT InitializeDirectX();

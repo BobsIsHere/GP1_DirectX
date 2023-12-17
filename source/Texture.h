@@ -9,9 +9,9 @@ namespace dae
 		~Texture();
 
 		//Rule of Five
-		Texture(const Texture& other)                = delete;
-		Texture& operator=(const Texture& other)     = delete;
-		Texture(Texture&& other) noexcept            = delete;
+		Texture(const Texture& other) = delete;
+		Texture& operator=(const Texture& other) = delete;
+		Texture(Texture&& other) noexcept = delete;
 		Texture& operator=(Texture&& other) noexcept = delete;
 
 		//Member Functions

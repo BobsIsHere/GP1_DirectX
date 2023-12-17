@@ -18,9 +18,9 @@ namespace dae
 		~Mesh();
 
 		//Rule of Five
-		Mesh(const Mesh& other)				   = delete;
-		Mesh& operator=(const Mesh& other)	   = delete;
-		Mesh(Mesh&& other) noexcept			   = delete;
+		Mesh(const Mesh& other) = delete;
+		Mesh& operator=(const Mesh& other) = delete;
+		Mesh(Mesh&& other) noexcept = delete;
 		Mesh& operator=(Mesh&& other) noexcept = delete;
 
 		//Member Functions

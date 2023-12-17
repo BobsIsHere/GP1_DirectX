@@ -8,6 +8,7 @@ namespace dae
 	class Mesh;
 	class Camera;
 	class Texture;
+	class Effect;
 
 	class Renderer final
 	{
@@ -15,13 +16,14 @@ namespace dae
 		Renderer(SDL_Window* pWindow);
 		~Renderer();
 
-		Renderer(const Renderer& other)                = delete;
-		Renderer& operator=(const Renderer& other)     = delete;
-		Renderer(Renderer&& other) noexcept            = delete;
+		Renderer(const Renderer& other) = delete;
+		Renderer& operator=(const Renderer& other) = delete;
+		Renderer(Renderer&& other) noexcept = delete;
 		Renderer& operator=(Renderer&& other) noexcept = delete;
 
 		void Update(const Timer* pTimer);
 		void Render() const;
+		void ToggleSamplerState() const;
 
 	private:
 		SDL_Window* m_pWindow{};
@@ -42,6 +44,7 @@ namespace dae
 		Mesh* m_pMesh;
 		Camera* m_pCamera;
 		Texture* m_pTexture;
+		Effect* m_pEffect;
 
 		//DIRECTX
 		HRESULT InitializeDirectX();

@@ -3,6 +3,7 @@
 #include "Mesh.h"
 #include "Camera.h"
 #include "Texture.h"
+#include "Effect.h"
 
 //DirectX headers
 #include <dxgi.h>
@@ -32,25 +33,20 @@ namespace dae {
 
 		m_pTexture = Texture::LoadTexture("Resources/uv_grid_2.png", m_pDevice);
 
-		std::vector<Vertex_PosCol> vertices{ 
+		std::vector<Vertex_PosCol> vertices{   
 			//Position          //Colour          //UV
-			{{-3.f, 3.f, -2.f} ,{1.f, 1.f, 1.f}, {0.0f, 0.0f}},
-			{{0.f, 3.f, -2.f} ,{1.f, 1.f, 1.f},	{0.5f, 0.0f}},
-			{{3.f, 3.0f, -2.f} ,{1.f, 1.f, 1.f}, {1.0f, 0.f}},
-			{{-3.f, 0.f, -2.f} ,{1.f, 1.f, 1.f}, {0.f, 0.5f}},
-			{{0.f, 0.f, -2.f} ,{1.f, 1.f, 1.f},	{0.5f, 0.5f}},
-			{{3.f, 0.f, -2.f} ,{1.f, 1.f, 1.f},	{1.0f, 0.5f}},
-			{{-3.f, -3.f, -2.f} ,{1.f, 1.f, 1.f}, {0.0f, 1.0f}},
-			{{0.f, -3.f, -2.f} ,{1.f, 1.f, 1.f}, {0.5f, 1.0f}},
-			{{3.f, -3.f, -2.f} ,{1.f, 1.f, 1.f}, {1.0f, 1.0f}}
+			{{-3.f, 3.f, -2.f}, {1.f, 1.f, 1.f}, {0.0f, 0.0f}},
+			{{3.f, 3.0f, -2.f}, {1.f, 1.f, 1.f}, {1.0f, 0.f}},
+			{{-3.f, -3.f, -2.f},{1.f, 1.f, 1.f}, {0.0f, 1.0f}},
+			{{3.f, -3.f, -2.f}, {1.f, 1.f, 1.f}, {1.0f, 1.0f}}
 		};
-		std::vector<uint32_t> indices{ 3, 0, 1,    1, 4, 3,    4, 1, 2,
-									   2, 5, 4,    6, 3, 4,    4, 7, 6,
-									   7, 4, 5,    5, 8, 7 };
-
+		std::vector<uint32_t> indices{ 0, 1, 2, 2, 1, 3 };  
+		
 		m_pMesh = new Mesh{ m_pDevice, vertices, indices };
 		m_pMesh->SetDiffuseMap(m_pTexture);
+
 		m_pCamera = new Camera{ 45.f, float(m_Width) / m_Height, {0.f, 0.f, -10.f} };
+		m_pEffect = new Effect{ m_pDevice, L"Resources/fireFX_diffuse.png" };
 	}
 
 	Renderer::~Renderer()
@@ -73,9 +69,11 @@ namespace dae {
 		delete m_pMesh;
 		delete m_pCamera;
 		delete m_pTexture;
+		delete m_pEffect;
 		m_pMesh = nullptr;
 		m_pCamera = nullptr;
 		m_pTexture = nullptr;
+		m_pEffect = nullptr;
 	}
 
 	void Renderer::Update(const Timer* pTimer)
@@ -97,9 +95,15 @@ namespace dae {
 		//first make view projection matrix
 		const Matrix worldViewProjectionMatrix{ m_pCamera->GetViewMatrix() * m_pCamera->GetProjectionMatrix() };
 		m_pMesh->Render(m_pDeviceContext, worldViewProjectionMatrix);
+		m_pEffect->CreateSamplerState(m_pDevice);
 
 		//3. PRESENT BACKBUFFER (SWAP)
 		m_pSwapChain->Present(0, 0);
+	}
+
+	void Renderer::ToggleSamplerState() const
+	{
+		m_pEffect->ToggleSamplerState();
 	}
 
 	HRESULT Renderer::InitializeDirectX()

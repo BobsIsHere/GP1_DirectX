@@ -82,12 +82,13 @@ dae::Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexD
 
 dae::Mesh::~Mesh()
 {
-	delete m_pEffect;
-	m_pEffect = nullptr;
-
+	m_pTechnique->Release();
 	m_pInputLayout->Release();
 	m_pVertexBuffer->Release();
 	m_pIndexBuffer->Release();
+
+	delete m_pEffect;
+	m_pEffect = nullptr;
 }
 
 void dae::Mesh::Render(ID3D11DeviceContext* pDeviceContext, Matrix worldViewProjectionMatrix)
@@ -108,12 +109,14 @@ void dae::Mesh::Render(ID3D11DeviceContext* pDeviceContext, Matrix worldViewProj
 	pDeviceContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 	//5. Draw
+	ID3D11SamplerState* samplerState{ m_pEffect->GetCurrentSamplerState() };
 	D3DX11_TECHNIQUE_DESC techDesc{};
 	m_pTechnique->GetDesc(&techDesc);
 	for (UINT p = 0; p < techDesc.Passes; ++p)
 	{
 		m_pTechnique->GetPassByIndex(p)->Apply(0, pDeviceContext);
 		pDeviceContext->DrawIndexed(m_NumIndices, 0, 0);
+		pDeviceContext->PSSetSamplers(0, 1, &samplerState);
 	}
 }
 

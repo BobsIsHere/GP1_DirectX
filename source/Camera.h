@@ -9,9 +9,9 @@ namespace dae
 		~Camera();
 
 		//Rule of Five
-		Camera(const Camera& other)                = delete;
-		Camera& operator=(const Camera& other)     = delete;
-		Camera(Camera&& other) noexcept            = delete;
+		Camera(const Camera& other) = delete;
+		Camera& operator=(const Camera& other) = delete;
+		Camera(Camera&& other) noexcept = delete;
 		Camera& operator=(Camera&& other) noexcept = delete;
 
 		//Member Functions

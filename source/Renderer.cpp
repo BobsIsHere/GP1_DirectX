@@ -32,26 +32,26 @@ namespace dae {
 			std::cout << "DirectX initialization failed!\n";
 		}
 
-		//std::vector<Vertex_PosCol> vertices{};
-		//std::vector<uint32_t> indices{};
-		std::wstring fileName{ L"Resources/vehicle.obj" };
+		std::vector<Vertex_PosCol> vertices{};
+		std::vector<uint32_t> indices{};
+		const std::string fileName{ "Resources/vehicle.obj" };
 
-		m_pTexture = Texture::LoadTexture("Resources/uv_grid_2.png", m_pDevice);
-		//Utils::ParseOBJ(fileName, vertices, indices);
+		m_pTexture = Texture::LoadTexture("Resources/vehicle_diffuse.png", m_pDevice);
+		Utils::ParseOBJ(fileName, vertices, indices);
 
-		std::vector<Vertex_PosCol> vertices{   
-			//Position          //Colour          //UV
-			{{-3.f, 3.f, -2.f}, {1.f, 1.f, 1.f}, {0.0f, 0.0f}},
-			{{3.f, 3.0f, -2.f}, {1.f, 1.f, 1.f}, {1.0f, 0.f}},
-			{{-3.f, -3.f, -2.f},{1.f, 1.f, 1.f}, {0.0f, 1.0f}},
-			{{3.f, -3.f, -2.f}, {1.f, 1.f, 1.f}, {1.0f, 1.0f}}
-		};
-		std::vector<uint32_t> indices{ 0, 1, 2, 2, 1, 3 };  
+		//std::vector<Vertex_PosCol> vertices{   
+		//	//Position          //Colour          //UV
+		//	{{-3.f, 3.f, -2.f}, {1.f, 1.f, 1.f}, {0.0f, 0.0f}},
+		//	{{3.f, 3.0f, -2.f}, {1.f, 1.f, 1.f}, {1.0f, 0.f}},
+		//	{{-3.f, -3.f, -2.f},{1.f, 1.f, 1.f}, {0.0f, 1.0f}},
+		//	{{3.f, -3.f, -2.f}, {1.f, 1.f, 1.f}, {1.0f, 1.0f}}
+		//};
+		//std::vector<uint32_t> indices{ 0, 1, 2, 2, 1, 3 };  
 		
 		m_pMesh = new Mesh{ m_pDevice, vertices, indices };
 		m_pMesh->SetDiffuseMap(m_pTexture);
 
-		m_pCamera = new Camera{ 45.f, float(m_Width) / m_Height, {0.f, 0.f, -10.f} };
+		m_pCamera = new Camera{ 45.f, float(m_Width) / m_Height, {0.f, 0.f, -50.f} };
 	}
 
 	Renderer::~Renderer()

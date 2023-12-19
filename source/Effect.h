@@ -33,7 +33,6 @@ namespace dae
 		void SetDiffuseMap(Texture* pDiffuseTexture);
 		void CreateSamplerState(ID3D11Device* pDevice);
 		void ToggleSamplerState();
-		//void SetSamplerState(SamplerStates filter);
 
 	private:
 		//Member Variables

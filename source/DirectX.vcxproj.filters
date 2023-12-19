@@ -55,6 +55,9 @@
     <ClInclude Include="Texture.h">
       <Filter>Files</Filter>
     </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Vector3.cpp">

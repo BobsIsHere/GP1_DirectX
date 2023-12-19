@@ -44,7 +44,6 @@ namespace dae
 		Mesh* m_pMesh;
 		Camera* m_pCamera;
 		Texture* m_pTexture;
-		Effect* m_pEffect;
 
 		//DIRECTX
 		HRESULT InitializeDirectX();

@@ -32,6 +32,8 @@ Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetFile)
 	{
 		std::wcout << L"SamplerVariable not valid\n";
 	}
+
+	CreateSamplerState(pDevice);
 }
 
 Effect::~Effect()
@@ -72,38 +74,32 @@ void Effect::CreateSamplerState(ID3D11Device* pDevice)
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;  
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;  
 	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER; 
+	samplerDesc.MaxAnisotropy = 0;
 	samplerDesc.MinLOD = 0;  
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;  
 
-	switch (m_SamplerState)
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	result = pDevice->CreateSamplerState(&samplerDesc, &m_pPointState);
+
+	if (FAILED(result))
 	{
-	case point:
-		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-		result = pDevice->CreateSamplerState(&samplerDesc, &m_pPointState);
+		std::wcout << L"Creation point state failed";
+	}
 
-		if (FAILED(result))
-		{
-			std::wcout << L"Creation point state failed";
-		}
-		break;
-	case linear: 
-		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; 
-		result = pDevice->CreateSamplerState(&samplerDesc, &m_pLinearState);
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; 
+	result = pDevice->CreateSamplerState(&samplerDesc, &m_pLinearState);
 
-		if (FAILED(result)) 
-		{
-			std::wcout << L"Creation linear state failed";
-		}
-		break;
-	case anisotropic: 
-		samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC; 
-		result = pDevice->CreateSamplerState(&samplerDesc, &m_pAnisotropicState);
+	if (FAILED(result)) 
+	{
+		std::wcout << L"Creation linear state failed";
+	}
 
-		if (FAILED(result)) 
-		{
-			std::wcout << L"Creation anisotropic state failed";
-		}
-		break;
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC; 
+	result = pDevice->CreateSamplerState(&samplerDesc, &m_pAnisotropicState);
+
+	if (FAILED(result)) 
+	{
+		std::wcout << L"Creation anisotropic state failed";
 	}
 
 	if (!m_pCurrentSamplerState)
@@ -112,38 +108,26 @@ void Effect::CreateSamplerState(ID3D11Device* pDevice)
 	}
 }
 
-//void Effect::SetSamplerState(SamplerStates filter)
-//{
-//	switch (filter)
-//	{
-//	case point: 
-//		m_pCurrentSamplerState = m_pPointState;
-//		break;
-//	case linear:
-//		m_pCurrentSamplerState = m_pLinearState;
-//		break;
-//	case anisotropic: 
-//		m_pCurrentSamplerState = m_pAnisotropicState;
-//		break;
-//	}
-//}
-
 void Effect::ToggleSamplerState()
 {
-	m_pEffectSamplerVariable->SetSampler(0, m_pCurrentSamplerState);
-
 	// Toggle between sampler states (Point -> Linear -> Anisotropic -> Point)
 	if (m_pCurrentSamplerState == m_pPointState)
 	{
 		m_pCurrentSamplerState = m_pLinearState;
+		m_pEffectSamplerVariable->SetSampler(0, m_pLinearState);
+		std::cout << " --- Sampler State Linear --- \n";
 	}
 	else if (m_pCurrentSamplerState == m_pLinearState)
 	{
 		m_pCurrentSamplerState = m_pAnisotropicState;
+		m_pEffectSamplerVariable->SetSampler(0, m_pAnisotropicState);
+		std::cout << " --- Sampler State Anisotropic --- \n";
 	}
 	else if (m_pCurrentSamplerState == m_pAnisotropicState) 
 	{
 		m_pCurrentSamplerState = m_pPointState; 
+		m_pEffectSamplerVariable->SetSampler(0, m_pPointState);
+		std::cout << " --- Sampler State Point --- \n";
 	}
 }
 

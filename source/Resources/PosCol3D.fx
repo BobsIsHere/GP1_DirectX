@@ -1,8 +1,13 @@
 //--------------------------------------------
 //   Global Variables
 //--------------------------------------------
+float3 gLightDirection : LigtDirection;
+float3 gCameraPosition : CameraPosition;
+float4x4 gWorldMatrix : WorldMatrix;
 float4x4 gWorldViewProj : WorldViewProjection;
 Texture2D gDiffuseMap : DiffuseMap;
+Texture2D gSpecularMap : SpecularMap;
+Texture2D gGlossinessMap : GlossinessMap;
 SamplerState gSamplerState : Sample;
 
 //--------------------------------------------
@@ -23,6 +28,8 @@ struct VS_INPUT
 	float3 Position : POSITION;
 	float3 Color : COLOR;
     float2 UV : TEXCOORD;
+    float3 Normal : NORMAL;
+    float3 Tangent : TANGENT;
 };
 
 struct VS_OUTPUT
@@ -30,6 +37,8 @@ struct VS_OUTPUT
     float4 Position : SV_POSITION;
 	float3 Color : COLOR;
     float2 UV : TEXCOORD;
+    float3 Normal : NORMAL;
+    float3 Tangent : TANGENT;
 };
 
 //--------------------------------------------
@@ -41,6 +50,8 @@ VS_OUTPUT VS(VS_INPUT input)
     output.Position = mul(float4(input.Position, 1.f), gWorldViewProj);
 	output.Color = input.Color;
     output.UV = input.UV;
+    output.Normal = input.Normal;
+    output.Tangent = input.Tangent;
 	return output;
 }
 

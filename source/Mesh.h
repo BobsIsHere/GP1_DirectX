@@ -8,6 +8,8 @@ namespace dae
 		Vector3 position{};
 		ColorRGB color{};
 		Vector2 uv{};
+		Vector3 normal{};
+		Vector3 tangent{};
 	};
 
 
@@ -26,6 +28,7 @@ namespace dae
 		//Member Functions
 		void Render(ID3D11DeviceContext* pDeviceContext, Matrix worldViewProjectionMatrix);
 		void SetDiffuseMap(Texture* pDiffuseTexture);
+		void ToggleSamplerState();
 
 	private:
 		//Member variables

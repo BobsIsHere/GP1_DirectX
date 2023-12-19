@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "Texture.h"
 #include "Effect.h"
+#include "Utils.h"
 
 //DirectX headers
 #include <dxgi.h>
@@ -31,7 +32,12 @@ namespace dae {
 			std::cout << "DirectX initialization failed!\n";
 		}
 
+		//std::vector<Vertex_PosCol> vertices{};
+		//std::vector<uint32_t> indices{};
+		std::wstring fileName{ L"Resources/vehicle.obj" };
+
 		m_pTexture = Texture::LoadTexture("Resources/uv_grid_2.png", m_pDevice);
+		//Utils::ParseOBJ(fileName, vertices, indices);
 
 		std::vector<Vertex_PosCol> vertices{   
 			//Position          //Colour          //UV
@@ -46,7 +52,6 @@ namespace dae {
 		m_pMesh->SetDiffuseMap(m_pTexture);
 
 		m_pCamera = new Camera{ 45.f, float(m_Width) / m_Height, {0.f, 0.f, -10.f} };
-		m_pEffect = new Effect{ m_pDevice, L"Resources/fireFX_diffuse.png" };
 	}
 
 	Renderer::~Renderer()
@@ -69,11 +74,9 @@ namespace dae {
 		delete m_pMesh;
 		delete m_pCamera;
 		delete m_pTexture;
-		delete m_pEffect;
 		m_pMesh = nullptr;
 		m_pCamera = nullptr;
 		m_pTexture = nullptr;
-		m_pEffect = nullptr;
 	}
 
 	void Renderer::Update(const Timer* pTimer)
@@ -95,7 +98,6 @@ namespace dae {
 		//first make view projection matrix
 		const Matrix worldViewProjectionMatrix{ m_pCamera->GetViewMatrix() * m_pCamera->GetProjectionMatrix() };
 		m_pMesh->Render(m_pDeviceContext, worldViewProjectionMatrix);
-		m_pEffect->CreateSamplerState(m_pDevice);
 
 		//3. PRESENT BACKBUFFER (SWAP)
 		m_pSwapChain->Present(0, 0);
@@ -103,7 +105,7 @@ namespace dae {
 
 	void Renderer::ToggleSamplerState() const
 	{
-		m_pEffect->ToggleSamplerState();
+		m_pMesh->ToggleSamplerState();
 	}
 
 	HRESULT Renderer::InitializeDirectX()

@@ -21,10 +21,40 @@ Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetFile)
 		std::wcout << L"WorldViewProjection matrix not valid\n";
 	}
 
+	m_pMatWorldVariable = m_pEffect->GetVariableByName("gWorldMatrix")->AsMatrix();
+	if (!m_pMatWorldVariable->IsValid())
+	{
+		std::wcout << L"MatWorldVariable matrix not valid\n";
+	}
+
+	m_pCameraPosition = m_pEffect->GetVariableByName("gCameraPosition")->AsVector();
+	if (!m_pCameraPosition->IsValid())
+	{
+		std::wcout << L"Camera Position not valid\n";
+	}
+
 	m_pDiffuseMapVariable = m_pEffect->GetVariableByName("gDiffuseMap")->AsShaderResource();
 	if (!m_pDiffuseMapVariable->IsValid())
 	{
 		std::wcout << L"DiffuseMapVariable not valid\n";
+	}
+	
+	m_pSpecularMapVariable = m_pEffect->GetVariableByName("gSpecularMap")->AsShaderResource();
+	if (!m_pSpecularMapVariable->IsValid())
+	{
+		std::wcout << L"SpecularMapVariable not valid\n";
+	}
+
+	m_pGlossinessMapVariable = m_pEffect->GetVariableByName("gGlossinessMap")->AsShaderResource();
+	if (!m_pGlossinessMapVariable->IsValid())
+	{
+		std::wcout << L"GlossinessMapVariable not valid\n";
+	}
+
+	m_pNormalMapVariable = m_pEffect->GetVariableByName("gNormalMap")->AsShaderResource();
+	if (!m_pNormalMapVariable->IsValid())
+	{
+		std::wcout << L"NormalMapVariable not valid\n";
 	}
 
 	m_pEffectSamplerVariable = m_pEffect->GetVariableByName("gSamplerState")->AsSampler();
@@ -43,7 +73,14 @@ Effect::~Effect()
 	m_pAnisotropicState->Release();
 	
 	m_pMatWorldViewProjVariable->Release();
+	m_pMatWorldVariable->Release();
+	m_pCameraPosition->Release();
+
 	m_pDiffuseMapVariable->Release();
+	m_pSpecularMapVariable->Release();
+	m_pGlossinessMapVariable->Release();
+	m_pNormalMapVariable->Release();
+
 	m_pTechnique->Release();
 	m_pEffect->Release();
 }
@@ -66,6 +103,60 @@ void Effect::SetDiffuseMap(Texture* pDiffuseTexture)
 	}
 }
 
+void Effect::SetSpecularMap(Texture* pSpecularTexture)
+{
+	if (m_pSpecularMapVariable)
+	{
+		m_pSpecularMapVariable->SetResource(pSpecularTexture->GetShaderResourceView());
+	}
+}
+
+void Effect::SetGlossinessMap(Texture* pGlossTexture)
+{
+	if (m_pGlossinessMapVariable)
+	{
+		m_pGlossinessMapVariable->SetResource(pGlossTexture->GetShaderResourceView());
+	}
+}
+
+void Effect::SetNormalMap(Texture* pNormalTexture)
+{
+	if (m_pNormalMapVariable)
+	{
+		m_pNormalMapVariable->SetResource(pNormalTexture->GetShaderResourceView());
+	}
+}
+
+void Effect::SetWorldViewProjectionMatrix(Matrix worldViewProjectionMatrix)
+{
+	const dae::Vector4* matReinterpretedVector{ reinterpret_cast<const dae::Vector4*>(&worldViewProjectionMatrix[0])};
+	const float* matReinterpretedFloat{ reinterpret_cast<const float*>(matReinterpretedVector) };
+	
+	if (m_pMatWorldViewProjVariable)
+	{
+		m_pMatWorldViewProjVariable->SetMatrix(matReinterpretedFloat);
+	}
+}
+
+void Effect::SetWorldMatrix(Matrix worldMatrix)
+{
+	const dae::Vector4* matReinterpretedVector{ reinterpret_cast<const dae::Vector4*>(&worldMatrix[0])};
+	const float* matReinterpretedFloat{ reinterpret_cast<const float*>(matReinterpretedVector) };
+
+	if (m_pMatWorldVariable)
+	{
+		m_pMatWorldVariable->SetMatrix(matReinterpretedFloat);
+	}
+}
+
+void Effect::SetCameraPosition(Vector3 cameraPosition)
+{
+	if (m_pCameraPosition)
+	{
+		m_pCameraPosition->SetFloatVector(reinterpret_cast<float*>(&cameraPosition));
+	}
+}
+
 void Effect::CreateSamplerState(ID3D11Device* pDevice)
 {
 	HRESULT result{};
@@ -74,7 +165,7 @@ void Effect::CreateSamplerState(ID3D11Device* pDevice)
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;  
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;  
 	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER; 
-	samplerDesc.MaxAnisotropy = 0;
+	samplerDesc.MaxAnisotropy = 1;
 	samplerDesc.MinLOD = 0;  
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;  
 
@@ -105,30 +196,38 @@ void Effect::CreateSamplerState(ID3D11Device* pDevice)
 	if (!m_pCurrentSamplerState)
 	{
 		m_pCurrentSamplerState = m_pPointState;
+		m_pEffectSamplerVariable->SetSampler(0, m_pCurrentSamplerState);
 	}
 }
 
 void Effect::ToggleSamplerState()
 {
 	// Toggle between sampler states (Point -> Linear -> Anisotropic -> Point)
-	if (m_pCurrentSamplerState == m_pPointState)
+	switch (m_SamplerState)
 	{
+	case Effect::SamplerStates::point:
+		m_SamplerState = SamplerStates::linear; 
 		m_pCurrentSamplerState = m_pLinearState;
-		m_pEffectSamplerVariable->SetSampler(0, m_pLinearState);
+
 		std::cout << " --- Sampler State Linear --- \n";
-	}
-	else if (m_pCurrentSamplerState == m_pLinearState)
-	{
+		break;
+
+	case Effect::SamplerStates::linear:
+		m_SamplerState = SamplerStates::anisotropic; 
 		m_pCurrentSamplerState = m_pAnisotropicState;
-		m_pEffectSamplerVariable->SetSampler(0, m_pAnisotropicState);
+
 		std::cout << " --- Sampler State Anisotropic --- \n";
-	}
-	else if (m_pCurrentSamplerState == m_pAnisotropicState) 
-	{
-		m_pCurrentSamplerState = m_pPointState; 
-		m_pEffectSamplerVariable->SetSampler(0, m_pPointState);
+		break;
+
+	case Effect::SamplerStates::anisotropic:
+		m_SamplerState = SamplerStates::point; 
+		m_pCurrentSamplerState = m_pPointState;
+
 		std::cout << " --- Sampler State Point --- \n";
+		break;
 	}
+
+	m_pEffectSamplerVariable->SetSampler(0, m_pCurrentSamplerState);
 }
 
 ID3D11SamplerState* Effect::GetCurrentSamplerState() const

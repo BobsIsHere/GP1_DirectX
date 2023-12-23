@@ -18,7 +18,8 @@ namespace dae
 		void Update(const Timer* pTimer);
 		Matrix GetViewMatrix() const;
 		Matrix GetProjectionMatrix() const;
-		Matrix CreateWorldViewProjectionMatrix() const;
+		Matrix GetInverseViewMatrix() const;
+		Vector3 GetCameraOrigin() const;
 
 	private:
 		//Member Variables

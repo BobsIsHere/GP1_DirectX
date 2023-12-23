@@ -87,15 +87,8 @@ void dae::Camera::CalculateViewMatrix()
 	m_Right = Vector3::Cross(Vector3::UnitY, m_Forward).Normalized();
 	m_Up = Vector3::Cross(m_Forward, m_Right).Normalized();
 
-	m_InvViewMatrix = {
-		Vector4{m_Right, 0},
-		Vector4{m_Up, 0},
-		Vector4{m_Forward, 0},
-		Vector4{m_Origin, 1}
-	};
-
-	//viewMatrix = Matrix::CreateLookAtLH(origin, forward, up);
-	m_ViewMatrix = m_InvViewMatrix.Inverse();;
+	m_ViewMatrix = Matrix::CreateLookAtLH(m_Origin, m_Forward, m_Up);
+	m_InvViewMatrix = m_ViewMatrix.Inverse();
 }
 
 void dae::Camera::CalculateProjectionMatrix()
@@ -117,9 +110,12 @@ dae::Matrix dae::Camera::GetProjectionMatrix() const
 	return m_ProjectionMatrix;
 }
 
-dae::Matrix dae::Camera::CreateWorldViewProjectionMatrix() const
+dae::Matrix dae::Camera::GetInverseViewMatrix() const
 {
-	Matrix worldViewProjectionMatrix = GetViewMatrix() * GetProjectionMatrix();
-	
-	return worldViewProjectionMatrix; 
+	return m_InvViewMatrix;
+}
+
+dae::Vector3 dae::Camera::GetCameraOrigin() const
+{
+	return m_Origin;
 }

@@ -43,7 +43,10 @@ namespace dae
 
 		Mesh* m_pMesh;
 		Camera* m_pCamera;
-		Texture* m_pTexture;
+		Texture* m_pDiffuseTexture;
+		Texture* m_pSpecularTexture;
+		Texture* m_pGlossinessTexture;
+		Texture* m_pNormalTexture;
 
 		//DIRECTX
 		HRESULT InitializeDirectX();

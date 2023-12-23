@@ -36,20 +36,15 @@ namespace dae {
 		std::vector<uint32_t> indices{};
 		const std::string fileName{ "Resources/vehicle.obj" };
 
-		m_pTexture = Texture::LoadTexture("Resources/vehicle_diffuse.png", m_pDevice);
-		Utils::ParseOBJ(fileName, vertices, indices);
+		m_pDiffuseTexture = Texture::LoadTexture("Resources/vehicle_diffuse.png", m_pDevice);
+		m_pSpecularTexture = Texture::LoadTexture("Resources/vehicle_specular.png", m_pDevice);
+		m_pGlossinessTexture = Texture::LoadTexture("Resources/vehicle_gloss.png", m_pDevice);
+		m_pNormalTexture = Texture::LoadTexture("Resources/vehicle_normal.png", m_pDevice);
 
-		//std::vector<Vertex_PosCol> vertices{   
-		//	//Position          //Colour          //UV
-		//	{{-3.f, 3.f, -2.f}, {1.f, 1.f, 1.f}, {0.0f, 0.0f}},
-		//	{{3.f, 3.0f, -2.f}, {1.f, 1.f, 1.f}, {1.0f, 0.f}},
-		//	{{-3.f, -3.f, -2.f},{1.f, 1.f, 1.f}, {0.0f, 1.0f}},
-		//	{{3.f, -3.f, -2.f}, {1.f, 1.f, 1.f}, {1.0f, 1.0f}}
-		//};
-		//std::vector<uint32_t> indices{ 0, 1, 2, 2, 1, 3 };  
+		Utils::ParseOBJ(fileName, vertices, indices);
 		
 		m_pMesh = new Mesh{ m_pDevice, vertices, indices };
-		m_pMesh->SetDiffuseMap(m_pTexture);
+		m_pMesh->SetTextureMaps(m_pDiffuseTexture, m_pSpecularTexture, m_pGlossinessTexture, m_pNormalTexture);
 
 		m_pCamera = new Camera{ 45.f, float(m_Width) / m_Height, {0.f, 0.f, -50.f} };
 	}
@@ -73,15 +68,17 @@ namespace dae {
 
 		delete m_pMesh;
 		delete m_pCamera;
-		delete m_pTexture;
+		delete m_pDiffuseTexture;
 		m_pMesh = nullptr;
 		m_pCamera = nullptr;
-		m_pTexture = nullptr;
+		m_pDiffuseTexture = nullptr;
 	}
 
 	void Renderer::Update(const Timer* pTimer)
 	{
 		m_pCamera->Update(pTimer);
+
+		m_pMesh->SetCameraPosition(m_pCamera->GetCameraOrigin());
 	}
 
 	void Renderer::Render() const
@@ -96,7 +93,7 @@ namespace dae {
 
 		//2. SET PIPELINE + INVOKE DRAW CALLS (= RENDER)
 		//first make view projection matrix
-		const Matrix worldViewProjectionMatrix{ m_pCamera->GetViewMatrix() * m_pCamera->GetProjectionMatrix() };
+		const Matrix worldViewProjectionMatrix{ m_pMesh->GetWorldMatrix() * m_pCamera->GetInverseViewMatrix() * m_pCamera->GetProjectionMatrix() };
 		m_pMesh->Render(m_pDeviceContext, worldViewProjectionMatrix);
 
 		//3. PRESENT BACKBUFFER (SWAP)

@@ -2,8 +2,7 @@
 #include "Mesh.h" 
 #include <cassert>
 
-dae::Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData,	
-				Matrix worldMatrix) :
+dae::Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData,	Matrix worldMatrix) :
 	m_NumIndices{},
 	m_pIndexBuffer{},
 	m_pInputLayout{},

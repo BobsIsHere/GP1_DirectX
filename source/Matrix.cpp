@@ -206,8 +206,8 @@ namespace dae {
 	{
 		return {
 			{1, 0, 0, 0},
-			{0, cos(pitch), sin(pitch), 0},
-			{0, -sin(pitch), cos(pitch), 0},
+			{0, cos(pitch), -sin(pitch), 0},
+			{0, sin(pitch), cos(pitch), 0},
 			{0, 0, 0, 1}
 		};
 	}

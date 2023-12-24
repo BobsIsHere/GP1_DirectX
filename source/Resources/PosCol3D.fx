@@ -76,8 +76,8 @@ float3 LambertShading(float kd, float3 cd)
 //--------------------------------------------
 float3 PhongReflection(float ks, float exponent, float3 lightVector, float3 viewVector, float3 normal)
 {    
-    const float3 reflection = lightVector - 2.f * (dot(normal, lightVector)) * normal;
-    const float angle = dot(reflection, viewVector);
+    const float3 reflection = reflect(lightVector, normal);
+    const float angle = saturate(dot(reflection, viewVector));
     const float phong = ks * pow(angle, exponent);
     
     return float3(phong, phong, phong);
@@ -93,7 +93,7 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
     const float4 diffuseSample = gDiffuseMap.Sample(gSamplerState, input.UV);
     const float4 normalSample = gNormalMap.Sample(gSamplerState, input.UV);
     const float4 glossinessSample = gGlossinessMap.Sample(gSamplerState, input.UV);
-    const float4 specularSamlpe = gSpecularMap.Sample(gSamplerState, input.UV);
+    const float4 specularSample = gSpecularMap.Sample(gSamplerState, input.UV);
     
     //create tangent space transformation matrix
     const float3 binormal = cross(input.Normal, input.Tangent);
@@ -112,11 +112,10 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
     }
     
     float3 lambert = LambertShading(gLightIntensity, diffuseSample.rgb);
-    float3 phong = PhongReflection(specularSamlpe.r, glossinessSample.r * gShininess, gLightDirection, invViewDirection, sampledNormal);
+    float3 phong = PhongReflection(specularSample.r, glossinessSample.r * gShininess, gLightDirection, invViewDirection, sampledNormal);
     float3 result = (lambert + phong) * observedArea;
     
     return float4(result, 1.f);
-    //return float4(phong, 1.f);
 }
 
 //--------------------------------------------

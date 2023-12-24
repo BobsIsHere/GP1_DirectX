@@ -69,9 +69,15 @@ namespace dae {
 		delete m_pMesh;
 		delete m_pCamera;
 		delete m_pDiffuseTexture;
+		delete m_pSpecularTexture;
+		delete m_pGlossinessTexture;
+		delete m_pNormalTexture;
 		m_pMesh = nullptr;
 		m_pCamera = nullptr;
 		m_pDiffuseTexture = nullptr;
+		m_pSpecularTexture = nullptr;
+		m_pGlossinessTexture = nullptr;
+		m_pNormalTexture = nullptr;
 	}
 
 	void Renderer::Update(const Timer* pTimer)

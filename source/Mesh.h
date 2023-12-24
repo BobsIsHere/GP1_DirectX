@@ -44,7 +44,6 @@ namespace dae
 		uint32_t m_NumIndices;
 		Matrix m_WorldMatrix;
 		Matrix m_WorldViewProjectionMatrix;
-		Matrix m_ViewInverseMatrix;
 
 		//Member Functions
 		void VertexAndInputCreation(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData);

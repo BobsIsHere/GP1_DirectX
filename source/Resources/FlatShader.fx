@@ -8,6 +8,15 @@ Texture2D gDiffuseMap : DiffuseMap;
 SamplerState gSamplerState : Sample;
 
 //--------------------------------------------
+//   Rasterizer State
+//--------------------------------------------
+RasterizerState gRasterizerState
+{
+    CullMode = none;
+    FrontCounterClockwise = false; //default
+};
+
+//--------------------------------------------
 //   Input/Output Structs
 //--------------------------------------------
 struct VS_INPUT
@@ -56,6 +65,7 @@ technique11 DefaultTechnique
 {
     pass P0
     {
+        SetRasterizerState(gRasterizerState);
         SetVertexShader(CompileShader(vs_5_0, VS()));
         SetGeometryShader(NULL);
         SetPixelShader(CompileShader(ps_5_0, PS()));

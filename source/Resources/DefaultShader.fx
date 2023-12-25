@@ -9,6 +9,7 @@ Texture2D gSpecularMap : SpecularMap;
 Texture2D gGlossinessMap : GlossinessMap;
 Texture2D gNormalMap : NormalMap;
 SamplerState gSamplerState : Sample;
+RasterizerState gRasterizerState : RASTERIZERSTAGE;
 
 float3 gLightDirection = { 0.577f, -0.577f, 0.577f };
 float gPI = 3.14159265359f;
@@ -127,7 +128,8 @@ technique11 DefaultTechnique
 {
 	pass P0
 	{
-		SetVertexShader( CompileShader( vs_5_0, VS() ) );
+        SetRasterizerState(gRasterizerState);
+        SetVertexShader( CompileShader( vs_5_0, VS() ) );
 		SetGeometryShader( NULL );
 		SetPixelShader( CompileShader( ps_5_0, PS() ) );
 	}

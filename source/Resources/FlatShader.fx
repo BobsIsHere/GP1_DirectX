@@ -17,6 +17,21 @@ RasterizerState gRasterizerState
 };
 
 //--------------------------------------------
+//   Blend State
+//--------------------------------------------
+BlendState gBlendState
+{
+    BlendEnable[0] = true;
+    SrcBlend = src_alpha;
+    DestBlend = inv_src_alpha;
+    BlendOp = add;
+    SrcBlendAlpha = zero;
+    DestBlendAlpha = zero;
+    BlendOpAlpha = add;
+    RenderTargetWriteMask[0] = 0x0F;
+};
+
+//--------------------------------------------
 //   Input/Output Structs
 //--------------------------------------------
 struct VS_INPUT
@@ -66,6 +81,7 @@ technique11 DefaultTechnique
     pass P0
     {
         SetRasterizerState(gRasterizerState);
+        SetBlendState(gBlendState, float4(0.f, 0.f, 0.f, 0.f), 0xFFFFFFFF);
         SetVertexShader(CompileShader(vs_5_0, VS()));
         SetGeometryShader(NULL);
         SetPixelShader(CompileShader(ps_5_0, PS()));

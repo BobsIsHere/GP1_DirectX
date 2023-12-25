@@ -8,8 +8,10 @@ Texture2D gDiffuseMap : DiffuseMap;
 Texture2D gSpecularMap : SpecularMap;
 Texture2D gGlossinessMap : GlossinessMap;
 Texture2D gNormalMap : NormalMap;
+
 SamplerState gSamplerState : Sample;
 RasterizerState gRasterizerState : RASTERIZERSTAGE;
+BlendState gBlendState : BLENDSTATE;
 
 float3 gLightDirection = { 0.577f, -0.577f, 0.577f };
 float gPI = 3.14159265359f;

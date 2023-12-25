@@ -1,12 +1,11 @@
 #include "pch.h"
 #include "Effect.h"
-#include "Texture.h"
 
 using namespace dae;
 
 Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetFile)
 {
-	m_pEffect = LoadEffect(pDevice, assetFile); 
+	m_pEffect = LoadEffect(pDevice, assetFile);
 	m_SamplerState = SamplerStates::point;
 
 	m_pTechnique = m_pEffect->GetTechniqueByName("DefaultTechnique");
@@ -33,30 +32,6 @@ Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetFile)
 		std::wcout << L"Camera Position not valid\n";
 	}
 
-	m_pDiffuseMapVariable = m_pEffect->GetVariableByName("gDiffuseMap")->AsShaderResource();
-	if (!m_pDiffuseMapVariable->IsValid())
-	{
-		std::wcout << L"DiffuseMapVariable not valid\n";
-	}
-	
-	m_pSpecularMapVariable = m_pEffect->GetVariableByName("gSpecularMap")->AsShaderResource();
-	if (!m_pSpecularMapVariable->IsValid())
-	{
-		std::wcout << L"SpecularMapVariable not valid\n";
-	}
-
-	m_pGlossinessMapVariable = m_pEffect->GetVariableByName("gGlossinessMap")->AsShaderResource();
-	if (!m_pGlossinessMapVariable->IsValid())
-	{
-		std::wcout << L"GlossinessMapVariable not valid\n";
-	}
-
-	m_pNormalMapVariable = m_pEffect->GetVariableByName("gNormalMap")->AsShaderResource();
-	if (!m_pNormalMapVariable->IsValid())
-	{
-		std::wcout << L"NormalMapVariable not valid\n";
-	}
-
 	m_pEffectSamplerVariable = m_pEffect->GetVariableByName("gSamplerState")->AsSampler();
 	if (!m_pEffectSamplerVariable->IsValid())
 	{
@@ -70,16 +45,11 @@ Effect::~Effect()
 {
 	m_pPointState->Release(); 
 	m_pLinearState->Release(); 
-	m_pAnisotropicState->Release();
-	
-	m_pMatWorldViewProjVariable->Release();
-	m_pMatWorldVariable->Release();
-	m_pCameraPosition->Release();
+	m_pAnisotropicState->Release(); 
 
-	m_pDiffuseMapVariable->Release();
-	m_pSpecularMapVariable->Release();
-	m_pGlossinessMapVariable->Release();
-	m_pNormalMapVariable->Release();
+	m_pMatWorldViewProjVariable->Release(); 
+	m_pMatWorldVariable->Release(); 
+	m_pCameraPosition->Release(); 
 
 	m_pTechnique->Release();
 	m_pEffect->Release();
@@ -95,43 +65,16 @@ ID3DX11EffectMatrixVariable* Effect::GetMatWorldViewProjVariable() const
 	return m_pMatWorldViewProjVariable;
 }
 
-void Effect::SetDiffuseMap(Texture* pDiffuseTexture)
+ID3D11SamplerState* Effect::GetCurrentSamplerState() const
 {
-	if (m_pDiffuseMapVariable)
-	{
-		m_pDiffuseMapVariable->SetResource(pDiffuseTexture->GetShaderResourceView());
-	}
-}
-
-void Effect::SetSpecularMap(Texture* pSpecularTexture)
-{
-	if (m_pSpecularMapVariable)
-	{
-		m_pSpecularMapVariable->SetResource(pSpecularTexture->GetShaderResourceView());
-	}
-}
-
-void Effect::SetGlossinessMap(Texture* pGlossTexture)
-{
-	if (m_pGlossinessMapVariable)
-	{
-		m_pGlossinessMapVariable->SetResource(pGlossTexture->GetShaderResourceView());
-	}
-}
-
-void Effect::SetNormalMap(Texture* pNormalTexture)
-{
-	if (m_pNormalMapVariable)
-	{
-		m_pNormalMapVariable->SetResource(pNormalTexture->GetShaderResourceView());
-	}
+	return m_pCurrentSamplerState;
 }
 
 void Effect::SetWorldViewProjectionMatrix(Matrix worldViewProjectionMatrix)
 {
-	const dae::Vector4* matReinterpretedVector{ reinterpret_cast<const dae::Vector4*>(&worldViewProjectionMatrix[0])};
+	const dae::Vector4* matReinterpretedVector{ reinterpret_cast<const dae::Vector4*>(&worldViewProjectionMatrix[0]) };
 	const float* matReinterpretedFloat{ reinterpret_cast<const float*>(matReinterpretedVector) };
-	
+
 	if (m_pMatWorldViewProjVariable)
 	{
 		m_pMatWorldViewProjVariable->SetMatrix(matReinterpretedFloat);
@@ -140,7 +83,7 @@ void Effect::SetWorldViewProjectionMatrix(Matrix worldViewProjectionMatrix)
 
 void Effect::SetWorldMatrix(Matrix worldMatrix)
 {
-	const dae::Vector4* matReinterpretedVector{ reinterpret_cast<const dae::Vector4*>(&worldMatrix[0])};
+	const dae::Vector4* matReinterpretedVector{ reinterpret_cast<const dae::Vector4*>(&worldMatrix[0]) };
 	const float* matReinterpretedFloat{ reinterpret_cast<const float*>(matReinterpretedVector) };
 
 	if (m_pMatWorldVariable)
@@ -161,13 +104,13 @@ void Effect::CreateSamplerState(ID3D11Device* pDevice)
 {
 	HRESULT result{};
 	D3D11_SAMPLER_DESC samplerDesc{};
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;  
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;  
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;  
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER; 
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	samplerDesc.MaxAnisotropy = 1;
-	samplerDesc.MinLOD = 0;  
-	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;  
+	samplerDesc.MinLOD = 0;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
 	result = pDevice->CreateSamplerState(&samplerDesc, &m_pPointState);
@@ -177,18 +120,18 @@ void Effect::CreateSamplerState(ID3D11Device* pDevice)
 		std::wcout << L"Creation point state failed";
 	}
 
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; 
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	result = pDevice->CreateSamplerState(&samplerDesc, &m_pLinearState);
 
-	if (FAILED(result)) 
+	if (FAILED(result))
 	{
 		std::wcout << L"Creation linear state failed";
 	}
 
-	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC; 
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
 	result = pDevice->CreateSamplerState(&samplerDesc, &m_pAnisotropicState);
 
-	if (FAILED(result)) 
+	if (FAILED(result))
 	{
 		std::wcout << L"Creation anisotropic state failed";
 	}
@@ -206,21 +149,21 @@ void Effect::ToggleSamplerState()
 	switch (m_SamplerState)
 	{
 	case Effect::SamplerStates::point:
-		m_SamplerState = SamplerStates::linear; 
+		m_SamplerState = SamplerStates::linear;
 		m_pCurrentSamplerState = m_pLinearState;
 
 		std::cout << " --- Sampler State Linear --- \n";
 		break;
 
 	case Effect::SamplerStates::linear:
-		m_SamplerState = SamplerStates::anisotropic; 
+		m_SamplerState = SamplerStates::anisotropic;
 		m_pCurrentSamplerState = m_pAnisotropicState;
 
 		std::cout << " --- Sampler State Anisotropic --- \n";
 		break;
 
 	case Effect::SamplerStates::anisotropic:
-		m_SamplerState = SamplerStates::point; 
+		m_SamplerState = SamplerStates::point;
 		m_pCurrentSamplerState = m_pPointState;
 
 		std::cout << " --- Sampler State Point --- \n";
@@ -228,11 +171,6 @@ void Effect::ToggleSamplerState()
 	}
 
 	m_pEffectSamplerVariable->SetSampler(0, m_pCurrentSamplerState);
-}
-
-ID3D11SamplerState* Effect::GetCurrentSamplerState() const
-{
-	return m_pCurrentSamplerState;
 }
 
 ID3DX11Effect* Effect::LoadEffect(ID3D11Device* pDevice, const std::wstring& assetFile)
@@ -243,18 +181,18 @@ ID3DX11Effect* Effect::LoadEffect(ID3D11Device* pDevice, const std::wstring& ass
 
 	DWORD shaderFlags = 0;
 #if defined( DEBUG ) || defined( _DEBUG )
-	shaderFlags |= D3DCOMPILE_DEBUG; 
+	shaderFlags |= D3DCOMPILE_DEBUG;
 	shaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
-	
+
 	result = D3DX11CompileEffectFromFile(assetFile.c_str(),
-										 nullptr,
-										 nullptr,
-										shaderFlags,
-										 0,
-										 pDevice,
-										&pEffect,
-										&pErrorBlob);
+		nullptr,
+		nullptr,
+		shaderFlags,
+		0,
+		pDevice,
+		&pEffect,
+		&pErrorBlob);
 
 	if (FAILED(result))
 	{
@@ -283,5 +221,5 @@ ID3DX11Effect* Effect::LoadEffect(ID3D11Device* pDevice, const std::wstring& ass
 		}
 	}
 
-	return pEffect; 
+	return pEffect;
 }

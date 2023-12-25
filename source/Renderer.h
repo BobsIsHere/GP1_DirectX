@@ -8,7 +8,8 @@ namespace dae
 	class Mesh;
 	class Camera;
 	class Texture;
-	class Effect;
+	class EffectVehicle;
+	class EffectFire;
 
 	class Renderer final
 	{
@@ -41,12 +42,18 @@ namespace dae
 		ID3D11Resource* m_pRenderTargetBuffer;
 		ID3D11RenderTargetView* m_pRenderTargetView;
 
-		Mesh* m_pMesh;
+		Mesh* m_pMeshVehicle;
+		Mesh* m_pMeshFire;
 		Camera* m_pCamera;
+
+		EffectVehicle* m_pEffectVehicle;
+		EffectFire* m_pEffectFire;
+
 		Texture* m_pDiffuseTexture;
 		Texture* m_pSpecularTexture;
 		Texture* m_pGlossinessTexture;
 		Texture* m_pNormalTexture;
+		Texture* m_pFireTexture;
 
 		//DIRECTX
 		HRESULT InitializeDirectX();

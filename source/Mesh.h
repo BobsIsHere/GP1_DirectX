@@ -1,5 +1,5 @@
 #pragma once
-#include "Effect.h"
+#include "EffectVehicle.h"
 
 namespace dae
 {
@@ -15,7 +15,7 @@ namespace dae
 	class Mesh final
 	{
 	public:
-		Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData, 
+		Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData, Effect* pEffect, 
 			 Matrix worldMatrix = Matrix{ Vector4{1, 0, 0, 0}, Vector4{0, 1, 0, 0}, Vector4{0, 0, 1, 0}, Vector4{0, 0, 0, 1} });
 		~Mesh();
 
@@ -27,7 +27,6 @@ namespace dae
 
 		//Member Functions
 		void Render(ID3D11DeviceContext* pDeviceContext, Matrix worldViewProjectionMatrix);
-		void SetTextureMaps(Texture* pDiffuseTexture, Texture* pSpecularTexture, Texture* pGlossTexture, Texture* pNormalTexture);
 		void SetMatrices(Matrix worldMatrix, Matrix worldViwProj);
 		void SetCameraPosition(Vector3 cameraPosition);
 		void ToggleSamplerState();

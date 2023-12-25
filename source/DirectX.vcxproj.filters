@@ -11,6 +11,9 @@
     <Filter Include="Files">
       <UniqueIdentifier>{47a6614b-6a35-4f4a-bab7-faa33504fb50}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Files\Effects">
+      <UniqueIdentifier>{7fb9720b-c873-4e67-a50c-290747a3075e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vector3.h">
@@ -37,9 +40,6 @@
     <ClInclude Include="ColorRGB.h">
       <Filter>Math</Filter>
     </ClInclude>
-    <ClInclude Include="Effect.h">
-      <Filter>Files</Filter>
-    </ClInclude>
     <ClInclude Include="Mesh.h">
       <Filter>Files</Filter>
     </ClInclude>
@@ -58,6 +58,15 @@
     <ClInclude Include="Utils.h">
       <Filter>Files</Filter>
     </ClInclude>
+    <ClInclude Include="EffectVehicle.h">
+      <Filter>Files\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectFire.h">
+      <Filter>Files\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="Effect.h">
+      <Filter>Files\Effects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Vector3.cpp">
@@ -74,9 +83,6 @@
     </ClCompile>
     <ClCompile Include="Vector2.cpp">
       <Filter>Math</Filter>
-    </ClCompile>
-    <ClCompile Include="Effect.cpp">
-      <Filter>Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Files</Filter>
@@ -95,6 +101,15 @@
     </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectVehicle.cpp">
+      <Filter>Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectFire.cpp">
+      <Filter>Files\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="Effect.cpp">
+      <Filter>Files\Effects</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

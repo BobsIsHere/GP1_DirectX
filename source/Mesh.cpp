@@ -2,14 +2,13 @@
 #include "Mesh.h" 
 #include <cassert>
 
-dae::Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData,	Matrix worldMatrix) :
+dae::Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData, Effect* pEffect, Matrix worldMatrix) :
 	m_NumIndices{},
 	m_pIndexBuffer{},
 	m_pInputLayout{},
-	m_WorldMatrix{worldMatrix}
+	m_WorldMatrix{worldMatrix},
+	m_pEffect{ pEffect }
 {
-	const std::wstring& assetName{ L"Resources/PosCol3D.fx" };
-	m_pEffect = new Effect{ pDevice, assetName };
 	m_pTechnique = m_pEffect->GetTechnique();
 
 	// Vertex / Input Layout and Buffer
@@ -52,14 +51,6 @@ void dae::Mesh::Render(ID3D11DeviceContext* pDeviceContext, Matrix worldViewProj
 		m_pTechnique->GetPassByIndex(p)->Apply(0, pDeviceContext);
 		pDeviceContext->DrawIndexed(m_NumIndices, 0, 0);
 	}
-}
-
-void dae::Mesh::SetTextureMaps(Texture* pDiffuseTexture, Texture* pSpecularTexture, Texture* pGlossTexture, Texture* pNormalTexture)
-{
-	m_pEffect->SetDiffuseMap(pDiffuseTexture);
-	m_pEffect->SetSpecularMap(pSpecularTexture); 
-	m_pEffect->SetGlossinessMap(pGlossTexture); 
-	m_pEffect->SetNormalMap(pNormalTexture);
 }
 
 void dae::Mesh::SetMatrices(Matrix worldMatrix, Matrix worldViwProj)

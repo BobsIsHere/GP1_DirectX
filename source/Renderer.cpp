@@ -3,7 +3,8 @@
 #include "Mesh.h"
 #include "Camera.h"
 #include "Texture.h"
-#include "Effect.h"
+#include "EffectVehicle.h"
+#include "EffectFire.h"
 #include "Utils.h"
 
 //DirectX headers
@@ -32,21 +33,34 @@ namespace dae {
 			std::cout << "DirectX initialization failed!\n";
 		}
 
-		std::vector<Vertex_PosCol> vertices{};
-		std::vector<uint32_t> indices{};
-		const std::string fileName{ "Resources/vehicle.obj" };
+		m_pCamera = new Camera{ 45.f, float(m_Width) / m_Height, {0.f, 0.f, -50.f} };
+
+		m_pEffectVehicle = new EffectVehicle{ m_pDevice, L"Resources/DefaultShader.fx" };
+		m_pEffectFire = new EffectFire{ m_pDevice, L"Resources/FlatShader.fx" };
 
 		m_pDiffuseTexture = Texture::LoadTexture("Resources/vehicle_diffuse.png", m_pDevice);
 		m_pSpecularTexture = Texture::LoadTexture("Resources/vehicle_specular.png", m_pDevice);
 		m_pGlossinessTexture = Texture::LoadTexture("Resources/vehicle_gloss.png", m_pDevice);
 		m_pNormalTexture = Texture::LoadTexture("Resources/vehicle_normal.png", m_pDevice);
+		m_pFireTexture = Texture::LoadTexture("Resources/fireFX_diffuse.png", m_pDevice);
 
-		Utils::ParseOBJ(fileName, vertices, indices);
-		
-		m_pMesh = new Mesh{ m_pDevice, vertices, indices };
-		m_pMesh->SetTextureMaps(m_pDiffuseTexture, m_pSpecularTexture, m_pGlossinessTexture, m_pNormalTexture);
+		std::vector<Vertex_PosCol> vertices{};
+		std::vector<uint32_t> indices{};
+		const std::string fileNameVehicle{ "Resources/vehicle.obj" };
+		const std::string fileNameFire{ "Resources/fireFX.obj" };
 
-		m_pCamera = new Camera{ 45.f, float(m_Width) / m_Height, {0.f, 0.f, -50.f} };
+		//Vehicle OBJ
+		Utils::ParseOBJ(fileNameVehicle, vertices, indices);
+		m_pMeshVehicle = new Mesh{ m_pDevice, vertices, indices, m_pEffectVehicle };
+		m_pEffectVehicle->SetDiffuseMap(m_pDiffuseTexture);
+		m_pEffectVehicle->SetSpecularMap(m_pSpecularTexture);
+		m_pEffectVehicle->SetGlossinessMap(m_pGlossinessTexture);
+		m_pEffectVehicle->SetNormalMap(m_pNormalTexture);
+
+		//Fire OBJ
+		Utils::ParseOBJ(fileNameFire, vertices, indices);
+		m_pMeshFire = new Mesh{ m_pDevice, vertices, indices, m_pEffectFire };
+		m_pEffectFire->SetDiffuseMap(m_pFireTexture);
 	}
 
 	Renderer::~Renderer()
@@ -66,13 +80,20 @@ namespace dae {
 		m_pRenderTargetBuffer->Release(); 
 		m_pRenderTargetView->Release();
 
-		delete m_pMesh;
+		/*delete m_pEffectFire;
+		delete m_pEffectVehicle;*/
+		delete m_pMeshVehicle;
+		delete m_pMeshFire;
 		delete m_pCamera;
 		delete m_pDiffuseTexture;
 		delete m_pSpecularTexture;
 		delete m_pGlossinessTexture;
 		delete m_pNormalTexture;
-		m_pMesh = nullptr;
+
+		/*m_pEffectFire = nullptr;
+		m_pEffectVehicle = nullptr;*/
+		m_pMeshVehicle = nullptr;
+		m_pMeshFire = nullptr;
 		m_pCamera = nullptr;
 		m_pDiffuseTexture = nullptr;
 		m_pSpecularTexture = nullptr;
@@ -84,7 +105,8 @@ namespace dae {
 	{
 		m_pCamera->Update(pTimer);
 
-		m_pMesh->SetCameraPosition(m_pCamera->GetCameraOrigin());
+		m_pMeshVehicle->SetCameraPosition(m_pCamera->GetCameraOrigin());
+		m_pMeshFire->SetCameraPosition(m_pCamera->GetCameraOrigin());
 	}
 
 	void Renderer::Render() const
@@ -99,8 +121,9 @@ namespace dae {
 
 		//2. SET PIPELINE + INVOKE DRAW CALLS (= RENDER)
 		//first make view projection matrix
-		const Matrix worldViewProjectionMatrix{ m_pMesh->GetWorldMatrix() * m_pCamera->GetInverseViewMatrix() * m_pCamera->GetProjectionMatrix() };
-		m_pMesh->Render(m_pDeviceContext, worldViewProjectionMatrix);
+		const Matrix worldViewProjectionMatrix{ m_pMeshVehicle->GetWorldMatrix() * m_pCamera->GetInverseViewMatrix() * m_pCamera->GetProjectionMatrix() };
+		m_pMeshVehicle->Render(m_pDeviceContext, worldViewProjectionMatrix);
+		m_pMeshFire->Render(m_pDeviceContext, worldViewProjectionMatrix);
 
 		//3. PRESENT BACKBUFFER (SWAP)
 		m_pSwapChain->Present(0, 0);
@@ -108,7 +131,8 @@ namespace dae {
 
 	void Renderer::ToggleSamplerState() const
 	{
-		m_pMesh->ToggleSamplerState();
+		m_pMeshVehicle->ToggleSamplerState();
+		m_pMeshFire->ToggleSamplerState();
 	}
 
 	HRESULT Renderer::InitializeDirectX()

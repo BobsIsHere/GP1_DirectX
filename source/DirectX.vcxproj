@@ -101,6 +101,8 @@ xcopy "$(ProjectDir)Resources\" "$(OutDir)Resources\" /y /D</Command>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ColorRGB.h" />
     <ClInclude Include="Effect.h" />
+    <ClInclude Include="EffectFire.h" />
+    <ClInclude Include="EffectVehicle.h" />
     <ClInclude Include="MathHelpers.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Mesh.h" />
@@ -117,6 +119,8 @@ xcopy "$(ProjectDir)Resources\" "$(OutDir)Resources\" /y /D</Command>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Effect.cpp" />
+    <ClCompile Include="EffectFire.cpp" />
+    <ClCompile Include="EffectVehicle.cpp" />
     <ClCompile Include="Matrix.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">pch.h</PrecompiledHeaderFile>

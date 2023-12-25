@@ -32,6 +32,34 @@ BlendState gBlendState
 };
 
 //--------------------------------------------
+//   Depth Stencil State
+//--------------------------------------------
+DepthStencilState gDepthStencilState
+{
+    DepthEnable = true;
+    DepthWriteMask = zero;
+    DepthFunc = less;
+    StencilEnable = false;
+
+	//others are redundant because StencilEnable is false
+	//for demo purposes only
+    StencilReadMask = 0x0f;
+    StencilWriteMask = 0x0f;
+
+    FrontFaceStencilFunc = always;
+    BackFaceStencilFunc = always;
+
+    FrontFaceStencilDepthFail = keep;
+    BackFaceStencilDepthFail = keep;
+
+    FrontFaceStencilPass = keep;
+    BackFaceStencilPass = keep;
+
+    FrontFaceStencilFail = keep;
+    BackFaceStencilFail = keep;
+};
+
+//--------------------------------------------
 //   Input/Output Structs
 //--------------------------------------------
 struct VS_INPUT
@@ -81,6 +109,7 @@ technique11 DefaultTechnique
     pass P0
     {
         SetRasterizerState(gRasterizerState);
+        SetDepthStencilState(gDepthStencilState, 0);
         SetBlendState(gBlendState, float4(0.f, 0.f, 0.f, 0.f), 0xFFFFFFFF);
         SetVertexShader(CompileShader(vs_5_0, VS()));
         SetGeometryShader(NULL);

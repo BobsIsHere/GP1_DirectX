@@ -11,6 +11,7 @@ Texture2D gNormalMap : NormalMap;
 
 SamplerState gSamplerState : Sample;
 RasterizerState gRasterizerState : RASTERIZERSTAGE;
+DepthStencilState gDepthStencilState : DEPTHSTENCILSTATE;
 BlendState gBlendState : BLENDSTATE;
 
 float3 gLightDirection = { 0.577f, -0.577f, 0.577f };
@@ -131,6 +132,8 @@ technique11 DefaultTechnique
 	pass P0
 	{
         SetRasterizerState(gRasterizerState);
+        SetDepthStencilState(gDepthStencilState, 0);
+        SetBlendState(gBlendState, float4(0.f, 0.f, 0.f, 0.f), 0xFFFFFFFF);
         SetVertexShader( CompileShader( vs_5_0, VS() ) );
 		SetGeometryShader( NULL );
 		SetPixelShader( CompileShader( ps_5_0, PS() ) );

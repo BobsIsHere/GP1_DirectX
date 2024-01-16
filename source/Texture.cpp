@@ -53,7 +53,10 @@ Texture* Texture::LoadTexture(const std::string& path, ID3D11Device* pDevice)
 
 	assert(pSurface != nullptr);
 
-	return new Texture{ pSurface, pDevice }; 
+	Texture* pTexture = new Texture{ pSurface, pDevice };
+
+	SDL_FreeSurface(pSurface);
+	return pTexture;  
 }
 
 ID3D11ShaderResourceView* Texture::GetShaderResourceView()

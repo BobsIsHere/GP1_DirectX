@@ -87,6 +87,11 @@ void dae::Mesh::ToggleSamplerState()
 	m_pEffect->ToggleSamplerState();
 }
 
+void dae::Mesh::ToggleNormalMap()
+{
+	m_pEffect->ToggleNormalMap();
+}
+
 void dae::Mesh::RotateMesh(float rotation)
 {
 	m_RotationMatrix = Matrix::CreateRotationY(rotation) * m_RotationMatrix;

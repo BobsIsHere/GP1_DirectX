@@ -31,6 +31,7 @@ namespace dae
 		void SetWVPMatrix(Matrix worldViewProj);
 		void SetCameraPosition(Vector3 cameraPosition);
 		void ToggleSamplerState();
+		void ToggleNormalMap();
 		void RotateMesh(float rotation);
 
 		Matrix GetWorldMatrix() const;

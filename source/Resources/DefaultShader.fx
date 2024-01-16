@@ -14,6 +14,9 @@ RasterizerState gRasterizerState : RASTERIZERSTAGE;
 DepthStencilState gDepthStencilState : DEPTHSTENCILSTATE;
 BlendState gBlendState : BLENDSTATE;
 
+bool gUseNormals : UseNormals;
+
+const float3 gAmbient = { 0.03f, 0.03f, 0.03f };
 float3 gLightDirection = { 0.577f, -0.577f, 0.577f };
 float gPI = 3.14159265359f;
 float gLightIntensity = 7.0f;
@@ -99,16 +102,25 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
     const float4 glossinessSample = gGlossinessMap.Sample(gSamplerState, input.UV);
     const float4 specularSample = gSpecularMap.Sample(gSamplerState, input.UV);
     
-    //create tangent space transformation matrix
-    const float3 binormal = cross(input.Normal, input.Tangent);
-    const float3x3 tangentSpaceAxis = float3x3(input.Tangent, binormal, input.Normal);
+    float observedArea = 0;
     
-    //sample from normal map and multiply it with matrix
-    //change range [0, 1] to [-1, 1]
-    const float3 normalMap = 2.f * normalSample.rgb - float3(1.f, 1.f, 1.f);
-    const float3 sampledNormal = normalize(mul(normalMap, tangentSpaceAxis));
+    if (gUseNormals)
+    {
+          //create tangent space transformation matrix
+        const float3 binormal = cross(input.Normal, input.Tangent);
+        const float3x3 tangentSpaceAxis = float3x3(input.Tangent, binormal, input.Normal);
     
-    float observedArea = dot(sampledNormal, normalize(gLightDirection) * -1.f);
+        //sample from normal map and multiply it with matrix
+        //change range [0, 1] to [-1, 1]
+        const float3 normalMap = 2.f * normalSample.rgb - float3(1.f, 1.f, 1.f);
+        const float3 sampledNormal = normalize(mul(normalMap, tangentSpaceAxis));
+    
+        observedArea = dot(sampledNormal, normalize(gLightDirection) * -1.f);
+    }
+    else
+    {
+        observedArea = dot(input.Normal, normalize(gLightDirection) * -1.f);
+    }
     
     if(observedArea <= 0)
     {
@@ -116,8 +128,8 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
     }
     
     float3 lambert = LambertShading(gLightIntensity, diffuseSample.rgb);
-    float3 phong = PhongReflection(specularSample.r, glossinessSample.r * gShininess, gLightDirection, invViewDirection, sampledNormal);
-    float3 result = (lambert + phong) * observedArea;
+    float3 phong = PhongReflection(specularSample.r, glossinessSample.r * gShininess, gLightDirection, invViewDirection, input.Normal);
+    float3 result = (lambert + phong + gAmbient) * observedArea;
     
     return float4(result, 1.f);
 }

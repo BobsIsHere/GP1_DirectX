@@ -56,7 +56,6 @@ namespace dae
 
 		bool m_IsInitialized{ false };
 		bool m_IsRotating{ false };
-		bool m_IsShowingNormalMap{ true };
 		bool m_IsShowingFireMesh{ true };
 
 		ID3D11Device* m_pDevice;
@@ -84,11 +83,11 @@ namespace dae
 		HRESULT InitializeDirectX();
 
 		//SOFTWARE
-		void RenderMesh_W4();
+		/*void RenderMesh_W4();
 		void TriangleHandling(int triangleIdx, const Mesh& mesh_transformed);
 		void ProcessRenderedTriangle(const Vertex_PosCol& v0, const Vertex_PosCol& v1, const Vertex_PosCol& v2, float w0, float w1, float w2, int px, int py);
 		float Remap(float value, float inputMin, float inputMax);
 		ColorRGB PixelShading(const Vertex_PosCol& v);
-		void VertexTransformationFunction(std::vector<Mesh>& meshes_in) const;
+		void VertexTransformationFunction(std::vector<Mesh>& meshes_in) const;*/
 	};
 }

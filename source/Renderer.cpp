@@ -70,21 +70,6 @@ namespace dae {
 
 	Renderer::~Renderer()
 	{
-		m_pRenderTargetView->Release(); 
-		m_pRenderTargetBuffer->Release();  
-		m_pDepthStencilView->Release(); 
-		m_pDepthStencilBuffer->Release();  
-		m_pSwapChain->Release(); 
-
-		if (m_pDeviceContext)
-		{
-			m_pDeviceContext->ClearState(); 
-			m_pDeviceContext->Flush(); 
-			m_pDeviceContext->Release(); 
-		}
-
-		m_pDevice->Release();   
-
 		delete m_pCamera;
 		
 		delete m_pEffectVehicle;
@@ -93,9 +78,25 @@ namespace dae {
 		delete m_pSpecularTexture;
 		delete m_pGlossinessTexture;
 		delete m_pNormalTexture;
+		delete m_pFireTexture;
 
 		delete m_pEffectFire;
 		delete m_pMeshFire;
+
+		m_pRenderTargetView->Release(); 
+		m_pRenderTargetBuffer->Release(); 
+		m_pDepthStencilView->Release(); 
+		m_pDepthStencilBuffer->Release(); 
+		m_pSwapChain->Release(); 
+
+		if (m_pDeviceContext) 
+		{
+			m_pDeviceContext->ClearState(); 
+			m_pDeviceContext->Flush(); 
+			m_pDeviceContext->Release(); 
+		}
+
+		m_pDevice->Release();  
 
 		m_pEffectFire = nullptr;
 		m_pEffectVehicle = nullptr;
@@ -106,6 +107,7 @@ namespace dae {
 		m_pSpecularTexture = nullptr;
 		m_pGlossinessTexture = nullptr;
 		m_pNormalTexture = nullptr;
+		m_pFireTexture = nullptr;
 	}
 
 	void Renderer::Update(const Timer* pTimer)
@@ -143,11 +145,6 @@ namespace dae {
 		if (m_IsShowingFireMesh)
 		{
 			m_pMeshFire->Render(m_pDeviceContext, worldViewProjectionMatrix); 
-		}
-
-		if (m_IsShowingNormalMap) 
-		{
-			 // do some coding
 		}
 
 		//3. PRESENT BACKBUFFER (SWAP)
@@ -210,7 +207,7 @@ namespace dae {
 
 	void Renderer::ToggleNormalMap()
 	{
-		m_IsShowingNormalMap = !m_IsShowingNormalMap;
+		m_pMeshVehicle->ToggleNormalMap();
 	}
 
 	void Renderer::ToggleFireMesh()
@@ -235,11 +232,6 @@ namespace dae {
 		{
 			return result; 
 		}
-		
-		ID3D11Debug* m_d3dDebug{};
-		m_pDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&m_d3dDebug));
-		m_d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-
 
 		//Create DXGI Factory
 		IDXGIFactory1* pDxgiFactory{}; 
@@ -355,7 +347,7 @@ namespace dae {
 	// -----------------------------
 	//		  SOFTWARE PART
 	// -----------------------------
-	void Renderer::RenderMesh_W4() 
+	/*void Renderer::RenderMesh_W4() 
 	{
 
 	}
@@ -363,6 +355,6 @@ namespace dae {
 	void Renderer::VertexTransformationFunction(std::vector<Mesh>& meshes_in) const
 	{
 		
-	}
+	}*/
 
 }

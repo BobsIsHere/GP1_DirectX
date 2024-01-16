@@ -30,6 +30,7 @@ namespace dae
 		virtual void SetCameraPosition(Vector3 cameraPosition);
 		virtual void CreateSamplerState(ID3D11Device* pDevice);
 		virtual void ToggleSamplerState();
+		virtual void ToggleNormalMap();
 
 	protected:
 		//Member Functions
@@ -43,6 +44,8 @@ namespace dae
 		ID3DX11EffectMatrixVariable* m_pMatWorldVariable;
 		ID3DX11EffectVectorVariable* m_pCameraPosition;
 
+		ID3DX11EffectScalarVariable* m_pIsNormalMapOn;
+
 		ID3DX11EffectSamplerVariable* m_pEffectSamplerVariable;
 		ID3D11SamplerState* m_pPointState;
 		ID3D11SamplerState* m_pLinearState;
@@ -50,5 +53,7 @@ namespace dae
 		ID3D11SamplerState* m_pCurrentSamplerState;
 
 		SamplerStates m_SamplerState;
+
+		bool m_IsUsingNormal{ true };
 	};
 }

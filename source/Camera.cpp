@@ -1,17 +1,19 @@
 #include "pch.h"
 #include "Camera.h"
 
-dae::Camera::Camera(float fovAngle, float aspect, const Vector3& origin) :
-	m_AspectRatio{ aspect },
+dae::Camera::Camera(const Vector3& origin, float fovAngle, float nearPlane, float farPlane, float aspectRatio) :
+	m_ZN{ nearPlane },
+	m_ZF{ farPlane },
 	m_Origin{ origin },
+	m_AspectRatio{ aspectRatio }, 
 	m_TotalPitch{},
 	m_TotalYaw{}
 {
 	m_FOV = tanf((fovAngle * TO_RADIANS) / 2.f);
 
-	m_Forward = Vector3::UnitZ; 
-	m_Right = Vector3::UnitX; 
-	m_Up = Vector3::UnitY; 
+	m_Forward = Vector3::UnitZ;  
+	m_Right = Vector3::UnitX;  
+	m_Up = Vector3::UnitY;  
 }
 
 dae::Camera::~Camera() 
@@ -25,21 +27,31 @@ void dae::Camera::Update(const Timer* pTimer)
 
 	//keyboard input
 	const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
-	const float speed{ 20.f };
+	const float baseSpeed{ 20.f };
+	float speed{ baseSpeed }; 
 
-	if (pKeyboardState[SDL_SCANCODE_W])
+	if (pKeyboardState[SDL_SCANCODE_LSHIFT]) 
+	{
+		speed *= 2;
+	}
+	else // Reset speed if no keys are pressed
+	{
+		speed = baseSpeed;
+	}
+
+	if (pKeyboardState[SDL_SCANCODE_W] || pKeyboardState[SDL_SCANCODE_UP])
 	{
 		m_Origin += m_Forward * speed * deltaTime;
 	}
-	else if (pKeyboardState[SDL_SCANCODE_S])
+	else if (pKeyboardState[SDL_SCANCODE_S] || pKeyboardState[SDL_SCANCODE_DOWN])
 	{
 		m_Origin -= m_Forward * speed * deltaTime;
 	}
-	else if (pKeyboardState[SDL_SCANCODE_D])
+	else if (pKeyboardState[SDL_SCANCODE_D] || pKeyboardState[SDL_SCANCODE_RIGHT])
 	{
 		m_Origin += m_Right * speed * deltaTime;
 	}
-	else if (pKeyboardState[SDL_SCANCODE_A])
+	else if (pKeyboardState[SDL_SCANCODE_A] || pKeyboardState[SDL_SCANCODE_LEFT]) 
 	{
 		m_Origin -= m_Right * speed * deltaTime;
 	}
@@ -93,10 +105,7 @@ void dae::Camera::CalculateViewMatrix()
 
 void dae::Camera::CalculateProjectionMatrix()
 {
-	const float zn{ 0.1f };
-	const float zf{ 100.f };
-
-	m_ProjectionMatrix = Matrix::CreatePerspectiveFovLH(m_FOV, m_AspectRatio, zn, zf);
+	m_ProjectionMatrix = Matrix::CreatePerspectiveFovLH(m_FOV, m_AspectRatio, m_ZN, m_ZF);
 }
 
 dae::Matrix dae::Camera::GetViewMatrix() const

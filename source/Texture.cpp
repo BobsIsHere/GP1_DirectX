@@ -5,10 +5,10 @@
 using namespace dae;
 
 Texture::Texture(SDL_Surface* pSurface, ID3D11Device* pDevice) :
-	m_pSurface{ pSurface },
+	//m_pSurface{ pSurface },
 	m_pResource{},
 	m_pSRV{}
-{
+{	
 	DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	D3D11_TEXTURE2D_DESC desc{};
 	desc.Width = pSurface->w;
@@ -45,21 +45,15 @@ Texture::~Texture()
 {
 	m_pResource->Release();
 	m_pSRV->Release();
-
-	if (m_pSurface)
-	{
-		SDL_FreeSurface(m_pSurface);
-		m_pSurface = nullptr;
-	}
 }
 
 Texture* Texture::LoadTexture(const std::string& path, ID3D11Device* pDevice)
 {
-	SDL_Surface* pTexture{ IMG_Load(path.data()) };
+	SDL_Surface* pSurface{ IMG_Load(path.data()) };
 
-	assert(pTexture != nullptr);
+	assert(pSurface != nullptr);
 
-	return new Texture{ pTexture, pDevice };
+	return new Texture{ pSurface, pDevice }; 
 }
 
 ID3D11ShaderResourceView* Texture::GetShaderResourceView()

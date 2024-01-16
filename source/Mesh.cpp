@@ -6,8 +6,8 @@ dae::Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexD
 	m_NumIndices{},
 	m_pIndexBuffer{},
 	m_pInputLayout{},
-	m_WorldMatrix{worldMatrix},
-	m_pEffect{ pEffect }
+	m_WorldMatrix{ worldMatrix },
+	m_pEffect{ pEffect } 
 {
 	m_pTechnique = m_pEffect->GetTechnique();
 
@@ -17,13 +17,19 @@ dae::Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexD
 
 dae::Mesh::~Mesh()
 {
-	m_pTechnique->Release();
-	m_pInputLayout->Release();
 	m_pVertexBuffer->Release();
 	m_pIndexBuffer->Release();
+	m_pInputLayout->Release();
 
-	delete m_pEffect;
-	m_pEffect = nullptr;
+	// Double deletion, effect and technique does not get handeled in Mesh & gets deleted in Effect class.
+	// Effect object is now owned by mesh, simply utilised. Technique is derrived from Effect.
+	//m_pTechnique->Release();
+
+	/*if (m_pEffect)
+	{
+		delete m_pEffect;
+		m_pEffect = nullptr;
+	}*/
 }
 
 void dae::Mesh::Render(ID3D11DeviceContext* pDeviceContext, Matrix worldViewProjectionMatrix)
@@ -38,7 +44,8 @@ void dae::Mesh::Render(ID3D11DeviceContext* pDeviceContext, Matrix worldViewProj
 	constexpr UINT stride = sizeof(Vertex_PosCol);
 	constexpr UINT offset = 0;
 	pDeviceContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
-	SetMatrices(m_WorldMatrix, worldViewProjectionMatrix);
+	SetWorldMatrix(); 
+	SetWVPMatrix(worldViewProjectionMatrix);
 
 	//4. Set Index Buffer
 	pDeviceContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
@@ -53,10 +60,16 @@ void dae::Mesh::Render(ID3D11DeviceContext* pDeviceContext, Matrix worldViewProj
 	}
 }
 
-void dae::Mesh::SetMatrices(Matrix worldMatrix, Matrix worldViwProj)
+void dae::Mesh::SetWorldMatrix()
 {
-	m_pEffect->SetWorldMatrix(worldMatrix);
-	m_pEffect->SetWorldViewProjectionMatrix(worldViwProj);
+	m_WorldMatrix = m_ScaleMatrix * m_RotationMatrix * m_TranslationMatrix;
+	
+	m_pEffect->SetWorldMatrix(m_WorldMatrix);
+}
+
+void dae::Mesh::SetWVPMatrix(Matrix worldViewProj)
+{
+	m_pEffect->SetWorldViewProjectionMatrix(worldViewProj);
 }
 
 void dae::Mesh::SetCameraPosition(Vector3 cameraPosition)
@@ -72,6 +85,11 @@ dae::Matrix dae::Mesh::GetWorldMatrix() const
 void dae::Mesh::ToggleSamplerState()
 {
 	m_pEffect->ToggleSamplerState();
+}
+
+void dae::Mesh::RotateMesh(float rotation)
+{
+	m_RotationMatrix = Matrix::CreateRotationY(rotation) * m_RotationMatrix;
 }
 
 void dae::Mesh::VertexAndInputCreation(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData)

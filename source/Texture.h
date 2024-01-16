@@ -19,7 +19,6 @@ namespace dae
 		ID3D11ShaderResourceView* GetShaderResourceView();
 
 	private:
-		SDL_Surface* m_pSurface;
 		ID3D11Texture2D* m_pResource;
 		ID3D11ShaderResourceView* m_pSRV;
 	};

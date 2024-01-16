@@ -5,7 +5,7 @@ namespace dae
 	class Camera final
 	{
 	public:
-		Camera(float fovAngle, float aspect, const Vector3& origin);
+		Camera(const Vector3& origin, float fovAngle, float nearPlane, float farPlane, float aspectRatio);
 		~Camera();
 
 		//Rule of Five
@@ -23,6 +23,8 @@ namespace dae
 
 	private:
 		//Member Variables
+		const float m_ZN;
+		const float m_ZF;
 		float m_FOV;
 		float m_AspectRatio;
 		float m_TotalPitch;

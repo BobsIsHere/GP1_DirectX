@@ -22,9 +22,9 @@ namespace dae
 
 	private:
 		//Member Variables
-		ID3DX11EffectMatrixVariable* m_pMatWorldViewProjVariable;
+		/*ID3DX11EffectMatrixVariable* m_pMatWorldViewProjVariable;
 		ID3DX11EffectMatrixVariable* m_pMatWorldVariable;
-		ID3DX11EffectVectorVariable* m_pCameraPosition;
+		ID3DX11EffectVectorVariable* m_pCameraPosition;*/
 
 		ID3DX11EffectShaderResourceVariable* m_pDiffuseMapVariable;
 	};

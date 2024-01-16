@@ -3,7 +3,8 @@
 
 using namespace dae;
 
-Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetFile)
+Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetFile) :
+	m_pCurrentSamplerState{}
 {
 	m_pEffect = LoadEffect(pDevice, assetFile);
 	m_SamplerState = SamplerStates::point;
@@ -43,16 +44,35 @@ Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetFile)
 
 Effect::~Effect()
 {
-	m_pPointState->Release(); 
-	m_pLinearState->Release(); 
-	m_pAnisotropicState->Release(); 
-
 	m_pMatWorldViewProjVariable->Release(); 
 	m_pMatWorldVariable->Release(); 
 	m_pCameraPosition->Release(); 
 
-	m_pTechnique->Release();
-	m_pEffect->Release();
+	if (m_pPointState != nullptr)
+	{
+		m_pPointState->Release();
+	}
+	
+	if (m_pLinearState != nullptr)
+	{
+		m_pLinearState->Release();
+	}
+	
+	if (m_pAnisotropicState != nullptr)
+	{
+		m_pAnisotropicState->Release();
+	}
+	
+	if (m_pEffectSamplerVariable != nullptr)
+	{
+		m_pEffectSamplerVariable->Release();
+	}
+	
+	if (m_pEffect != nullptr)
+	{
+		m_pTechnique->Release();
+		m_pEffect->Release();
+	}
 }
 
 ID3DX11EffectTechnique* Effect::GetTechnique() const
@@ -72,23 +92,23 @@ ID3D11SamplerState* Effect::GetCurrentSamplerState() const
 
 void Effect::SetWorldViewProjectionMatrix(Matrix worldViewProjectionMatrix)
 {
-	const dae::Vector4* matReinterpretedVector{ reinterpret_cast<const dae::Vector4*>(&worldViewProjectionMatrix[0]) };
-	const float* matReinterpretedFloat{ reinterpret_cast<const float*>(matReinterpretedVector) };
+	/*const dae::Vector4* matReinterpretedVector{ reinterpret_cast<const dae::Vector4*>(&worldViewProjectionMatrix) };
+	const float* matReinterpretedFloat{ reinterpret_cast<const float*>(matReinterpretedVector) };*/
 
 	if (m_pMatWorldViewProjVariable)
 	{
-		m_pMatWorldViewProjVariable->SetMatrix(matReinterpretedFloat);
+		m_pMatWorldViewProjVariable->SetMatrix((float*)&worldViewProjectionMatrix);
 	}
 }
 
 void Effect::SetWorldMatrix(Matrix worldMatrix)
 {
-	const dae::Vector4* matReinterpretedVector{ reinterpret_cast<const dae::Vector4*>(&worldMatrix[0]) };
-	const float* matReinterpretedFloat{ reinterpret_cast<const float*>(matReinterpretedVector) };
+	/*const dae::Vector4* matReinterpretedVector{ reinterpret_cast<const dae::Vector4*>(&worldMatrix) };
+	const float* matReinterpretedFloat{ reinterpret_cast<const float*>(matReinterpretedVector) };*/
 
 	if (m_pMatWorldVariable)
 	{
-		m_pMatWorldVariable->SetMatrix(matReinterpretedFloat);
+		m_pMatWorldVariable->SetMatrix((float*)&worldMatrix);
 	}
 }
 
@@ -139,7 +159,7 @@ void Effect::CreateSamplerState(ID3D11Device* pDevice)
 	if (!m_pCurrentSamplerState)
 	{
 		m_pCurrentSamplerState = m_pPointState;
-		m_pEffectSamplerVariable->SetSampler(0, m_pCurrentSamplerState);
+		m_pEffectSamplerVariable->SetSampler(uint32_t(0), m_pCurrentSamplerState);
 	}
 }
 
@@ -152,21 +172,21 @@ void Effect::ToggleSamplerState()
 		m_SamplerState = SamplerStates::linear;
 		m_pCurrentSamplerState = m_pLinearState;
 
-		std::cout << " --- Sampler State Linear --- \n";
+		//std::cout << " --- Sampler State Linear --- \n";
 		break;
 
 	case Effect::SamplerStates::linear:
 		m_SamplerState = SamplerStates::anisotropic;
 		m_pCurrentSamplerState = m_pAnisotropicState;
 
-		std::cout << " --- Sampler State Anisotropic --- \n";
+		//std::cout << " --- Sampler State Anisotropic --- \n";
 		break;
 
 	case Effect::SamplerStates::anisotropic:
 		m_SamplerState = SamplerStates::point;
 		m_pCurrentSamplerState = m_pPointState;
 
-		std::cout << " --- Sampler State Point --- \n";
+		//std::cout << " --- Sampler State Point --- \n";
 		break;
 	}
 

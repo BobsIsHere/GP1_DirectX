@@ -6,6 +6,7 @@
 #include "EffectVehicle.h"
 #include "EffectFire.h"
 #include "Utils.h"
+#include <thread>
 
 //DirectX headers
 #include <dxgi.h>
@@ -33,11 +34,12 @@ namespace dae {
 			std::cout << "DirectX initialization failed!\n";
 		}
 
-		m_pCamera = new Camera{ 45.f, float(m_Width) / m_Height, {0.f, 0.f, -50.f} };
+		m_pCamera = new Camera{ {0.f, 0.f, -50.f}, 45.f, 0.1f, 1000.f, float(m_Width) / m_Height }; 
 
 		m_pEffectVehicle = new EffectVehicle{ m_pDevice, L"Resources/DefaultShader.fx" };
 		m_pEffectFire = new EffectFire{ m_pDevice, L"Resources/FlatShader.fx" };
 
+		//Load Vehicle Textures
 		m_pDiffuseTexture = Texture::LoadTexture("Resources/vehicle_diffuse.png", m_pDevice);
 		m_pSpecularTexture = Texture::LoadTexture("Resources/vehicle_specular.png", m_pDevice);
 		m_pGlossinessTexture = Texture::LoadTexture("Resources/vehicle_gloss.png", m_pDevice);
@@ -53,45 +55,50 @@ namespace dae {
 		Utils::ParseOBJ(fileNameVehicle, vertices, indices);
 		m_pMeshVehicle = new Mesh{ m_pDevice, vertices, indices, m_pEffectVehicle };
 		m_pEffectVehicle->SetDiffuseMap(m_pDiffuseTexture);
-		m_pEffectVehicle->SetSpecularMap(m_pSpecularTexture);
+		m_pEffectVehicle->SetSpecularMap(m_pSpecularTexture); 
 		m_pEffectVehicle->SetGlossinessMap(m_pGlossinessTexture);
-		m_pEffectVehicle->SetNormalMap(m_pNormalTexture);
+		m_pEffectVehicle->SetNormalMap(m_pNormalTexture); 
 
 		//Fire OBJ
+		vertices.clear(); 
+		indices.clear(); 
+
 		Utils::ParseOBJ(fileNameFire, vertices, indices);
-		m_pMeshFire = new Mesh{ m_pDevice, vertices, indices, m_pEffectFire };
+		m_pMeshFire = new Mesh{ m_pDevice, vertices, indices, m_pEffectFire }; 
 		m_pEffectFire->SetDiffuseMap(m_pFireTexture);
 	}
 
 	Renderer::~Renderer()
 	{
-		m_pDevice->Release();
-		
+		m_pRenderTargetView->Release(); 
+		m_pRenderTargetBuffer->Release();  
+		m_pDepthStencilView->Release(); 
+		m_pDepthStencilBuffer->Release();  
+		m_pSwapChain->Release(); 
+
 		if (m_pDeviceContext)
 		{
 			m_pDeviceContext->ClearState(); 
-			m_pDeviceContext->Flush();
-			m_pDeviceContext->Release();
+			m_pDeviceContext->Flush(); 
+			m_pDeviceContext->Release(); 
 		}
 
-		m_pSwapChain->Release(); 
-		m_pDepthStencilBuffer->Release(); 
-		m_pDepthStencilView->Release(); 
-		m_pRenderTargetBuffer->Release(); 
-		m_pRenderTargetView->Release();
+		m_pDevice->Release();   
 
-		/*delete m_pEffectFire;
-		delete m_pEffectVehicle;*/
-		delete m_pMeshVehicle;
-		delete m_pMeshFire;
 		delete m_pCamera;
+		
+		delete m_pEffectVehicle;
+		delete m_pMeshVehicle;
 		delete m_pDiffuseTexture;
 		delete m_pSpecularTexture;
 		delete m_pGlossinessTexture;
 		delete m_pNormalTexture;
 
-		/*m_pEffectFire = nullptr;
-		m_pEffectVehicle = nullptr;*/
+		delete m_pEffectFire;
+		delete m_pMeshFire;
+
+		m_pEffectFire = nullptr;
+		m_pEffectVehicle = nullptr;
 		m_pMeshVehicle = nullptr;
 		m_pMeshFire = nullptr;
 		m_pCamera = nullptr;
@@ -103,6 +110,16 @@ namespace dae {
 
 	void Renderer::Update(const Timer* pTimer)
 	{
+		//variables
+		const float yaw{ (pTimer->GetElapsed() * 45.f) * TO_RADIANS }; 
+		const Matrix rotation{ Matrix::CreateRotationY(yaw) };
+
+		if (m_IsRotating)
+		{
+			m_pMeshVehicle->RotateMesh(yaw);
+			m_pMeshFire->RotateMesh(yaw);
+		}
+
 		m_pCamera->Update(pTimer);
 
 		m_pMeshVehicle->SetCameraPosition(m_pCamera->GetCameraOrigin());
@@ -115,24 +132,90 @@ namespace dae {
 			return;
 
 		//1. CLEAR RTV & DSV
-		constexpr float color[4] = { 0.f, 0.f, 0.3f, 1.f };
-		m_pDeviceContext->ClearRenderTargetView(m_pRenderTargetView, color);
+		constexpr float backgroundColor[4] = { 0.39f, 0.59f, 0.93f, 1.f };
+		m_pDeviceContext->ClearRenderTargetView(m_pRenderTargetView, backgroundColor);
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
 		//2. SET PIPELINE + INVOKE DRAW CALLS (= RENDER)
 		//first make view projection matrix
 		const Matrix worldViewProjectionMatrix{ m_pMeshVehicle->GetWorldMatrix() * m_pCamera->GetInverseViewMatrix() * m_pCamera->GetProjectionMatrix() };
 		m_pMeshVehicle->Render(m_pDeviceContext, worldViewProjectionMatrix);
-		m_pMeshFire->Render(m_pDeviceContext, worldViewProjectionMatrix);
+		if (m_IsShowingFireMesh)
+		{
+			m_pMeshFire->Render(m_pDeviceContext, worldViewProjectionMatrix); 
+		}
+
+		if (m_IsShowingNormalMap) 
+		{
+			 // do some coding
+		}
 
 		//3. PRESENT BACKBUFFER (SWAP)
 		m_pSwapChain->Present(0, 0);
 	}
 
-	void Renderer::ToggleSamplerState() const
+	// Not const because otherwise i cannnot change the SamplerState
+	void Renderer::ToggleSamplerState()
 	{
 		m_pMeshVehicle->ToggleSamplerState();
 		m_pMeshFire->ToggleSamplerState();
+
+		switch (m_Samples)
+		{
+		case SamplerStates::point:
+			std::cout << " --- Sampler State Linear --- \n";
+
+			m_Samples = SamplerStates::linear; 
+			break;
+
+		case SamplerStates::linear:
+			std::cout << " --- Sampler State Anisotropic --- \n";
+
+			m_Samples = SamplerStates::anisotropic;
+			break;
+
+		case SamplerStates::anisotropic:
+			std::cout << " --- Sampler State Point --- \n";
+
+			m_Samples = SamplerStates::point; 
+			break;
+		}
+	}
+
+	void Renderer::ToggleShadingModes()
+	{
+		switch (m_ShadingMode)
+		{
+		case dae::Renderer::ShadingModes::cosineLambert:
+
+			break;
+		case dae::Renderer::ShadingModes::diffuseLambert:
+
+			break;
+		case dae::Renderer::ShadingModes::specularPhong:
+
+			break;
+		case dae::Renderer::ShadingModes::combined:
+
+			break;
+		default:
+			break;
+		}
+	}
+
+	void Renderer::ToggleRotation()
+	{
+		m_IsRotating = !m_IsRotating;
+	}
+
+	void Renderer::ToggleNormalMap()
+	{
+		m_IsShowingNormalMap = !m_IsShowingNormalMap;
+	}
+
+	void Renderer::ToggleFireMesh()
+	{
+		m_IsShowingFireMesh = !m_IsShowingFireMesh;
 	}
 
 	HRESULT Renderer::InitializeDirectX()
@@ -153,6 +236,11 @@ namespace dae {
 			return result; 
 		}
 		
+		ID3D11Debug* m_d3dDebug{};
+		m_pDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&m_d3dDebug));
+		m_d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+
+
 		//Create DXGI Factory
 		IDXGIFactory1* pDxgiFactory{}; 
 		//void** --> represents pointer to location that stored another pointer to void
@@ -177,7 +265,7 @@ namespace dae {
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; 
 		swapChainDesc.BufferCount = 1; 
 		swapChainDesc.Windowed = true; 
-		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD; 
+		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;  
 		swapChainDesc.Flags = 0;
 
 		//Get the handle (HWND) from the SDL backbuffer
@@ -263,4 +351,18 @@ namespace dae {
 		//hidden resource leak of DXGI factory
 		pDxgiFactory->Release();
 	}
+
+	// -----------------------------
+	//		  SOFTWARE PART
+	// -----------------------------
+	void Renderer::RenderMesh_W4() 
+	{
+
+	}
+
+	void Renderer::VertexTransformationFunction(std::vector<Mesh>& meshes_in) const
+	{
+		
+	}
+
 }

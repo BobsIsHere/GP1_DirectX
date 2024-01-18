@@ -89,7 +89,13 @@ void dae::Mesh::ToggleSamplerState()
 
 void dae::Mesh::ToggleNormalMap()
 {
-	m_pEffect->ToggleNormalMap();
+	//It's not part of the hot code path
+	EffectVehicle* pVehicle{ dynamic_cast<EffectVehicle*>(m_pEffect) };
+
+	if (pVehicle != nullptr)
+	{
+		pVehicle->ToggleNormalMap();
+	}
 }
 
 void dae::Mesh::RotateMesh(float rotation)

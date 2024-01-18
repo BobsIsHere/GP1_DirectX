@@ -151,6 +151,11 @@ namespace dae {
 		m_pSwapChain->Present(0, 0);
 	}
 
+	void Renderer::Render_Hardware() const
+	{
+
+	}
+
 	// Not const because otherwise i cannnot change the SamplerState
 	void Renderer::ToggleSamplerState()
 	{
@@ -160,22 +165,19 @@ namespace dae {
 		switch (m_Samples)
 		{
 		case SamplerStates::point:
-			std::cout << " --- Sampler State Linear --- \n";
-
 			m_Samples = SamplerStates::linear; 
+			std::cout << "Sampling Filter: D3D11_FILTER_MIN_MAG_MIP_LINEAR" << std::endl; 
 			break;
 
 		case SamplerStates::linear:
-			std::cout << " --- Sampler State Anisotropic --- \n";
-
 			m_Samples = SamplerStates::anisotropic;
+			std::cout << "Sampling Filter: D3D11_FILTER_MIN_MAG_MIP_ANISOTROPIC" << std::endl; 
 			break;
 
 		case SamplerStates::anisotropic:
-			std::cout << " --- Sampler State Point --- \n";
-
 			m_Samples = SamplerStates::point; 
-			break;
+			std::cout << "Sampling Filter: D3D11_FILTER_MIN_MAG_MIP_POINT" << std::endl; 
+			break; 
 		}
 	}
 
@@ -208,11 +210,40 @@ namespace dae {
 	void Renderer::ToggleNormalMap()
 	{
 		m_pMeshVehicle->ToggleNormalMap();
+
+		m_IsNormalMapOn = !m_IsNormalMapOn;
+
+		if (m_IsNormalMapOn)
+		{
+			std::cout << "Sample normal map: ON\n";
+		}
+		else
+		{
+			std::cout << "Sample normal map: OFF\n";
+		}
 	}
 
 	void Renderer::ToggleFireMesh()
 	{
 		m_IsShowingFireMesh = !m_IsShowingFireMesh;
+	}
+
+	void Renderer::ToggleRenderingSettings()
+	{
+		switch (m_RenderSettings)
+		{
+		case Renderer::RenderingSettings::software:
+			m_RenderSettings = RenderingSettings::hardware;
+			std::cout << "Render setting: Hardware" << std::endl;
+			break;
+		case Renderer::RenderingSettings::hardware:
+			m_RenderSettings = RenderingSettings::software;
+			std::cout << "Render setting: Software" << std::endl;
+			break;
+		default:
+
+			break;
+		}
 	}
 
 	HRESULT Renderer::InitializeDirectX()
@@ -347,6 +378,11 @@ namespace dae {
 	// -----------------------------
 	//		  SOFTWARE PART
 	// -----------------------------
+	void Renderer::Render_Software() const
+	{
+
+	}
+
 	/*void Renderer::RenderMesh_W4() 
 	{
 

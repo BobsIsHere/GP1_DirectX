@@ -33,12 +33,6 @@ Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetFile) :
 		std::wcout << L"Camera Position not valid\n";
 	}
 
-	m_pIsNormalMapOn = m_pEffect->GetVariableByName("gUseNormals")->AsScalar();
-	if (!m_pIsNormalMapOn)
-	{
-		std::wcout << L"NormalMap bool not valid\n";
-	}
-
 	m_pEffectSamplerVariable = m_pEffect->GetVariableByName("gSamplerState")->AsSampler();
 	if (!m_pEffectSamplerVariable->IsValid())
 	{
@@ -46,7 +40,6 @@ Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetFile) :
 	}
 
 	CreateSamplerState(pDevice);
-	m_pIsNormalMapOn->SetBool(m_IsUsingNormal);
 }
 
 Effect::~Effect()
@@ -73,11 +66,6 @@ Effect::~Effect()
 	if (m_pEffectSamplerVariable != nullptr)
 	{
 		m_pEffectSamplerVariable->Release();
-	}
-
-	if (m_pIsNormalMapOn != nullptr)
-	{
-		m_pIsNormalMapOn->Release();
 	}
 	
 	if (m_pEffect != nullptr)
@@ -130,12 +118,6 @@ void Effect::SetCameraPosition(Vector3 cameraPosition)
 	{
 		m_pCameraPosition->SetFloatVector(reinterpret_cast<float*>(&cameraPosition));
 	}
-}
-
-void dae::Effect::ToggleNormalMap()
-{
-	m_IsUsingNormal = !m_IsUsingNormal;
-	m_pIsNormalMapOn->SetBool(m_IsUsingNormal);
 }
 
 void Effect::CreateSamplerState(ID3D11Device* pDevice)

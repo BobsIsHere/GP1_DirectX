@@ -25,12 +25,12 @@ float gShininess = 25.f;
 //--------------------------------------------
 //   Sample State
 //--------------------------------------------
-SamplerState samPoint
-{
-    Filter = MIN_MAG_MIP_POINT;
-    AddressU = Wrap; //or Mirror, Clamp, Border
-    AddressV = Wrap; //or Mirror, Clamp, Border
-};
+//SamplerState samPoint
+//{
+//    Filter = MIN_MAG_MIP_POINT;
+//    AddressU = Wrap; //or Mirror, Clamp, Border
+//    AddressV = Wrap; //or Mirror, Clamp, Border
+//};
 
 //--------------------------------------------
 //   Input/Output Structs
@@ -106,7 +106,7 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
     
     if (gUseNormals)
     {
-          //create tangent space transformation matrix
+         //create tangent space transformation matrix
         const float3 binormal = cross(input.Normal, input.Tangent);
         const float3x3 tangentSpaceAxis = float3x3(input.Tangent, binormal, input.Normal);
     

@@ -22,6 +22,7 @@ namespace dae
 		void SetSpecularMap(Texture* pSpecularTexture);
 		void SetGlossinessMap(Texture* pGlossTexture);
 		void SetNormalMap(Texture* pNormalTexture);
+		void ToggleNormalMap();
 
 	private:
 		//Member Variables
@@ -29,5 +30,7 @@ namespace dae
 		ID3DX11EffectShaderResourceVariable* m_pSpecularMapVariable;
 		ID3DX11EffectShaderResourceVariable* m_pGlossinessMapVariable; 
 		ID3DX11EffectShaderResourceVariable* m_pNormalMapVariable;
+
+		ID3DX11EffectScalarVariable* m_pIsNormalMapOn;
 	};
 }

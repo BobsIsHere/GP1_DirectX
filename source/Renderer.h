@@ -29,6 +29,13 @@ namespace dae
 		void ToggleRotation();
 		void ToggleNormalMap();
 		void ToggleFireMesh();
+		void ToggleRenderingSettings();
+
+		enum class RenderingSettings
+		{
+			software,
+			hardware
+		};
 
 		enum class SamplerStates
 		{
@@ -50,6 +57,7 @@ namespace dae
 
 		SamplerStates m_Samples{ SamplerStates::point }; 
 		ShadingModes m_ShadingMode{ ShadingModes::combined };
+		RenderingSettings m_RenderSettings{ RenderingSettings::hardware };
 
 		int m_Width{};
 		int m_Height{};
@@ -57,6 +65,7 @@ namespace dae
 		bool m_IsInitialized{ false };
 		bool m_IsRotating{ false };
 		bool m_IsShowingFireMesh{ true };
+		bool m_IsNormalMapOn{ true };
 
 		ID3D11Device* m_pDevice;
 		ID3D11DeviceContext* m_pDeviceContext;
@@ -80,9 +89,13 @@ namespace dae
 		Texture* m_pFireTexture;
 
 		//DIRECTX
+		void Render_Hardware() const;
+
 		HRESULT InitializeDirectX();
 
 		//SOFTWARE
+		void Render_Software() const;
+
 		/*void RenderMesh_W4();
 		void TriangleHandling(int triangleIdx, const Mesh& mesh_transformed);
 		void ProcessRenderedTriangle(const Vertex_PosCol& v0, const Vertex_PosCol& v1, const Vertex_PosCol& v2, float w0, float w1, float w2, int px, int py);

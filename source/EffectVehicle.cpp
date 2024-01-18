@@ -30,6 +30,14 @@ EffectVehicle::EffectVehicle(ID3D11Device* pDevice, const std::wstring& assetFil
 	{
 		std::wcout << L"NormalMapVariable not valid\n";
 	}
+
+	m_pIsNormalMapOn = m_pEffect->GetVariableByName("gUseNormals")->AsScalar();
+	if (!m_pIsNormalMapOn->IsValid())
+	{
+		std::wcout << L"NormalMap bool not valid\n";
+	}
+
+	m_pIsNormalMapOn->SetBool(m_IsUsingNormal);
 }
 
 EffectVehicle::~EffectVehicle()
@@ -38,6 +46,11 @@ EffectVehicle::~EffectVehicle()
 	m_pSpecularMapVariable->Release();
 	m_pGlossinessMapVariable->Release();
 	m_pNormalMapVariable->Release();
+
+	if (m_pIsNormalMapOn != nullptr)
+	{
+		m_pIsNormalMapOn->Release();
+	}
 }
 
 void EffectVehicle::SetDiffuseMap(Texture* pDiffuseTexture)
@@ -70,4 +83,10 @@ void EffectVehicle::SetNormalMap(Texture* pNormalTexture)
 	{
 		m_pNormalMapVariable->SetResource(pNormalTexture->GetShaderResourceView());
 	}
+}
+
+void EffectVehicle::ToggleNormalMap()
+{
+	m_IsUsingNormal = !m_IsUsingNormal;
+	m_pIsNormalMapOn->SetBool(m_IsUsingNormal);
 }

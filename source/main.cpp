@@ -56,8 +56,14 @@ int main(int argc, char* args[])
 				isLooping = false;
 				break;
 			case SDL_KEYUP:
-				//Test for a key
-				if (e.key.keysym.scancode == SDL_SCANCODE_F4)
+				//SHARED
+				if (e.key.keysym.scancode == SDL_SCANCODE_F1) 
+				{
+					pRenderer->ToggleRenderingSettings();
+				}
+
+				// HARDWARE SETTINGS
+				else if (e.key.keysym.scancode == SDL_SCANCODE_F4)
 				{
 					pRenderer->ToggleSamplerState();
 				}
@@ -79,6 +85,9 @@ int main(int argc, char* args[])
 					//CosineLambert -> DiffuseLambert -> SpecularPhong -> Combined
 					pRenderer->ToggleShadingModes();
 				}
+
+				//SOFTWARE SETTINGS
+
 				break;
 			default: ;
 			}

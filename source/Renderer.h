@@ -5,6 +5,8 @@ struct SDL_Surface;
 
 namespace dae
 {
+	struct Vertex_Out;
+
 	class Mesh;
 	class Camera;
 	class Texture;
@@ -37,6 +39,12 @@ namespace dae
 			hardware
 		};
 
+		enum class RenderMode
+		{
+			finalColour,
+			depthBuffer 
+		};
+
 		enum class SamplerStates
 		{
 			point,
@@ -53,19 +61,27 @@ namespace dae
 		};
 
 	private:
+		//SHARED VARIABLES
 		SDL_Window* m_pWindow{};
+
+		Texture* m_pDiffuseTexture; 
+		Texture* m_pSpecularTexture; 
+		Texture* m_pGlossinessTexture; 
+		Texture* m_pNormalTexture; 
 
 		SamplerStates m_Samples{ SamplerStates::point }; 
 		ShadingModes m_ShadingMode{ ShadingModes::combined };
 		RenderingSettings m_RenderSettings{ RenderingSettings::hardware };
 
+		bool m_IsRotating{ false };
+		bool m_IsNormalMapOn{ true };
+
+		//HARDWARE VARIABLES
 		int m_Width{};
 		int m_Height{};
 
 		bool m_IsInitialized{ false };
-		bool m_IsRotating{ false };
 		bool m_IsShowingFireMesh{ true };
-		bool m_IsNormalMapOn{ true };
 
 		ID3D11Device* m_pDevice;
 		ID3D11DeviceContext* m_pDeviceContext;
@@ -75,32 +91,35 @@ namespace dae
 		ID3D11Resource* m_pRenderTargetBuffer;
 		ID3D11RenderTargetView* m_pRenderTargetView;
 
-		Mesh* m_pMeshVehicle;
-		Mesh* m_pMeshFire;
+		std::vector<Mesh*> m_pMeshObjects;
 		Camera* m_pCamera;
 
 		EffectVehicle* m_pEffectVehicle;
 		EffectFire* m_pEffectFire;
 
-		Texture* m_pDiffuseTexture;
-		Texture* m_pSpecularTexture;
-		Texture* m_pGlossinessTexture;
-		Texture* m_pNormalTexture;
 		Texture* m_pFireTexture;
 
-		//DIRECTX
+		//SOFTWARE VARIABLES
+		RenderMode m_RenderMode{ RenderMode::finalColour };
+
+		SDL_Surface* m_pFrontBuffer{ nullptr };
+		SDL_Surface* m_pBackBuffer{ nullptr };
+		uint32_t* m_pBackBufferPixels{};
+
+		float* m_pDepthBufferPixels{};
+
+		//DIRECTX FUNCTIONS
 		void Render_Hardware() const;
 
 		HRESULT InitializeDirectX();
 
-		//SOFTWARE
+		//SOFTWARE FUNCTIONS
 		void Render_Software() const;
+		void VertexTransformationFunction(const std::vector<Mesh*>& meshes_in) const;
+		void TriangleHandeling(const Vertex_Out& v0, const Vertex_Out& v1, const Vertex_Out& v2, Mesh* mesh_transformed) const;
+		void ProcessRenderedTriangle(const Vertex_Out v0, const Vertex_Out v1, const Vertex_Out v2, float w0, float w1, float w2, int px, int py) const;
 
-		/*void RenderMesh_W4();
-		void TriangleHandling(int triangleIdx, const Mesh& mesh_transformed);
-		void ProcessRenderedTriangle(const Vertex_PosCol& v0, const Vertex_PosCol& v1, const Vertex_PosCol& v2, float w0, float w1, float w2, int px, int py);
-		float Remap(float value, float inputMin, float inputMax);
-		ColorRGB PixelShading(const Vertex_PosCol& v);
-		void VertexTransformationFunction(std::vector<Mesh>& meshes_in) const;*/
+		float Remap(float value, float inputMin, float inputMax) const;
+		ColorRGB PixelShading(const Vertex_Out& v) const;
 	};
 }

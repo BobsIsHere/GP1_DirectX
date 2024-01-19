@@ -2,20 +2,26 @@
 #include "Mesh.h" 
 #include <cassert>
 
-dae::Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData, Effect* pEffect, Matrix worldMatrix) :
+using namespace dae;
+
+Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData, Effect* pEffect, bool isHardware, Matrix worldMatrix) :
 	m_NumIndices{},
 	m_pIndexBuffer{},
 	m_pInputLayout{},
 	m_WorldMatrix{ worldMatrix },
-	m_pEffect{ pEffect } 
+	m_pEffect{ pEffect },
+	m_Vertices{ vertexData },
+	m_Indices{ indexData }
 {
 	m_pTechnique = m_pEffect->GetTechnique();
+
+	m_IsHardware = isHardware;
 
 	// Vertex / Input Layout and Buffer
 	VertexAndInputCreation(pDevice, vertexData, indexData);
 }
 
-dae::Mesh::~Mesh()
+Mesh::~Mesh()
 {
 	m_pVertexBuffer->Release();
 	m_pIndexBuffer->Release();
@@ -32,7 +38,7 @@ dae::Mesh::~Mesh()
 	}*/
 }
 
-void dae::Mesh::Render(ID3D11DeviceContext* pDeviceContext, Matrix worldViewProjectionMatrix)
+void Mesh::Render(ID3D11DeviceContext* pDeviceContext, Matrix worldViewProjectionMatrix)
 {
 	//1. Set Primitive Topology
 	pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -60,34 +66,54 @@ void dae::Mesh::Render(ID3D11DeviceContext* pDeviceContext, Matrix worldViewProj
 	}
 }
 
-void dae::Mesh::SetWorldMatrix()
+void Mesh::SetWorldMatrix()
 {
 	m_WorldMatrix = m_ScaleMatrix * m_RotationMatrix * m_TranslationMatrix;
 	
 	m_pEffect->SetWorldMatrix(m_WorldMatrix);
 }
 
-void dae::Mesh::SetWVPMatrix(Matrix worldViewProj)
+void Mesh::SetWVPMatrix(Matrix worldViewProj)
 {
 	m_pEffect->SetWorldViewProjectionMatrix(worldViewProj);
 }
 
-void dae::Mesh::SetCameraPosition(Vector3 cameraPosition)
+void Mesh::SetCameraPosition(Vector3 cameraPosition)
 {
 	m_pEffect->SetCameraPosition(cameraPosition);
 }
 
-dae::Matrix dae::Mesh::GetWorldMatrix() const
+Matrix Mesh::GetWorldMatrix() const
 {
 	return m_WorldMatrix;
 }
 
-void dae::Mesh::ToggleSamplerState()
+std::vector<Vertex_PosCol> Mesh::GetMeshVertices()
+{
+	return m_Vertices;
+}
+
+std::vector<uint32_t> Mesh::GetMeshIndices()
+{
+	return m_Indices;
+}
+
+PrimitiveTopology Mesh::GetPrimitiveTopology()
+{
+	return m_PrimitiveTopology;
+}
+
+std::vector<Vertex_Out>& Mesh::GetMeshVerticesOut()
+{
+	return m_VerticesOut;
+}
+
+void Mesh::ToggleSamplerState()
 {
 	m_pEffect->ToggleSamplerState();
 }
 
-void dae::Mesh::ToggleNormalMap()
+void Mesh::ToggleNormalMap()
 {
 	//It's not part of the hot code path
 	EffectVehicle* pVehicle{ dynamic_cast<EffectVehicle*>(m_pEffect) };
@@ -98,12 +124,12 @@ void dae::Mesh::ToggleNormalMap()
 	}
 }
 
-void dae::Mesh::RotateMesh(float rotation)
+void Mesh::RotateMesh(float rotation)
 {
 	m_RotationMatrix = Matrix::CreateRotationY(rotation) * m_RotationMatrix;
 }
 
-void dae::Mesh::VertexAndInputCreation(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData)
+void Mesh::VertexAndInputCreation(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData)
 {
 	//Create Vertex Layout
 	static constexpr uint32_t numElements{ 4 };

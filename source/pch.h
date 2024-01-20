@@ -22,3 +22,9 @@
 // Framework Headers
 #include "Timer.h"
 #include "Math.h"
+
+//Defines
+#define GREEN_COLOR_TEXT "\033[1;92m"
+#define BLUE_COLOR_TEXT "\033[1;94m"
+#define RED_COLOR_TEXT "\033[1;91m" 
+#define RESET_COLOR_TEXT "\033[0m" 

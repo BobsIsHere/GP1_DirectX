@@ -32,8 +32,9 @@ namespace dae
 		void ToggleNormalMap();
 		void ToggleFireMesh();
 		void ToggleRenderingSettings();
+		void ToggleRenderModes();
 
-		enum class RenderingSettings
+		enum class RasterizerSettings
 		{
 			software,
 			hardware
@@ -71,7 +72,7 @@ namespace dae
 
 		SamplerStates m_Samples{ SamplerStates::point }; 
 		ShadingModes m_ShadingMode{ ShadingModes::combined };
-		RenderingSettings m_RenderSettings{ RenderingSettings::hardware };
+		RasterizerSettings m_RasterizerSettings{ RasterizerSettings::hardware };
 
 		bool m_IsRotating{ false };
 		bool m_IsNormalMapOn{ true };
@@ -121,5 +122,8 @@ namespace dae
 
 		float Remap(float value, float inputMin, float inputMax) const;
 		ColorRGB PixelShading(const Vertex_Out& v) const;
+
+		//MEMBER FUCTIONS
+		void PrintingInfo() const;
 	};
 }

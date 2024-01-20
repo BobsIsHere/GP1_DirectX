@@ -6,6 +6,8 @@
 #include "EffectVehicle.h"
 #include "EffectFire.h"
 #include "Utils.h"
+#include <algorithm>
+#include <execution>
 
 //DirectX headers
 #include <dxgi.h>
@@ -73,6 +75,9 @@ namespace dae {
 		Utils::ParseOBJ(fileNameFire, vertices, indices);
 		pMesh = m_pMeshObjects.emplace_back(new Mesh{ m_pDevice, vertices, indices, m_pEffectFire, false });
 		m_pEffectFire->SetDiffuseMap(m_pFireTexture);
+
+		//Togglinng Info
+		PrintingInfo(); 
 	}
 
 	Renderer::~Renderer()
@@ -146,12 +151,12 @@ namespace dae {
 		if (!m_IsInitialized)
 			return;
 
-		if (m_RenderSettings == RenderingSettings::hardware)
+		if (m_RasterizerSettings == RasterizerSettings::hardware)
 		{
 			Render_Hardware();
 		}
 
-		if (m_RenderSettings == RenderingSettings::software)
+		if (m_RasterizerSettings == RasterizerSettings::software)
 		{
 			//@START
 			//Lock BackBuffer
@@ -167,6 +172,9 @@ namespace dae {
 		}
 	}
 
+	// -----------------------------
+	//		  HARDWARE PART
+	// -----------------------------
 	void Renderer::Render_Hardware() const
 	{
 		//1. CLEAR RTV & DSV
@@ -175,113 +183,24 @@ namespace dae {
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
 		//2. SET PIPELINE + INVOKE DRAW CALLS (= RENDER)
-		for (Mesh* pMesh : m_pMeshObjects)
+		const Matrix inverseViewMatrix = m_pCamera->GetInverseViewMatrix(); 
+		const Matrix projectionMatrix = m_pCamera->GetProjectionMatrix();
+
+		//first make view projection matrix
+		const Matrix worldViewProjectionMatrix{ m_pMeshObjects[0]->GetWorldMatrix() * inverseViewMatrix * projectionMatrix };
+		//Render Vehicle Mesh
+		m_pMeshObjects[0]->Render(m_pDeviceContext, worldViewProjectionMatrix); 
+
+		if (m_IsShowingFireMesh)
 		{
 			//first make view projection matrix
-			const Matrix worldViewProjectionMatrix{ pMesh->GetWorldMatrix() * m_pCamera->GetInverseViewMatrix() * m_pCamera->GetProjectionMatrix() };  
-			pMesh->Render(m_pDeviceContext, worldViewProjectionMatrix);
+			const Matrix worldViewProjectionMatrix{ m_pMeshObjects[1]->GetWorldMatrix() * inverseViewMatrix * projectionMatrix }; 
+			//Render Fire Mesh
+			m_pMeshObjects[1]->Render(m_pDeviceContext, worldViewProjectionMatrix); 
 		}
 
 		//3. PRESENT BACKBUFFER (SWAP)
 		m_pSwapChain->Present(0, 0);
-	}
-
-	// Not const because otherwise i cannnot change the SamplerState
-	void Renderer::ToggleSamplerState()
-	{
-		for (auto mesh : m_pMeshObjects)
-		{
-			mesh->ToggleSamplerState(); 
-		}
-
-		switch (m_Samples)
-		{
-		case SamplerStates::point:
-			m_Samples = SamplerStates::linear; 
-			std::cout << "Sampling Filter: D3D11_FILTER_MIN_MAG_MIP_LINEAR" << std::endl; 
-			break;
-
-		case SamplerStates::linear:
-			m_Samples = SamplerStates::anisotropic;
-			std::cout << "Sampling Filter: D3D11_FILTER_MIN_MAG_MIP_ANISOTROPIC" << std::endl; 
-			break;
-
-		case SamplerStates::anisotropic:
-			m_Samples = SamplerStates::point; 
-			std::cout << "Sampling Filter: D3D11_FILTER_MIN_MAG_MIP_POINT" << std::endl; 
-			break; 
-		}
-	}
-
-	void Renderer::ToggleShadingModes()
-	{
-		switch (m_ShadingMode)
-		{
-		case dae::Renderer::ShadingModes::cosineLambert:
-
-			break;
-		case dae::Renderer::ShadingModes::diffuseLambert:
-
-			break;
-		case dae::Renderer::ShadingModes::specularPhong:
-
-			break;
-		case dae::Renderer::ShadingModes::combined:
-
-			break;
-		default:
-			break;
-		}
-	}
-
-	void Renderer::ToggleRotation()
-	{
-		m_IsRotating = !m_IsRotating;
-	}
-
-	void Renderer::ToggleNormalMap()
-	{
-		for (auto mesh : m_pMeshObjects)
-		{
-			mesh->ToggleNormalMap(); 
-		}
-
-		m_IsNormalMapOn = !m_IsNormalMapOn;
-
-		if (m_IsNormalMapOn)
-		{
-			std::cout << "Sample normal map: ON\n";
-		}
-		else
-		{
-			std::cout << "Sample normal map: OFF\n";
-		}
-	}
-
-	void Renderer::ToggleFireMesh()
-	{
-		if (m_RenderSettings == RenderingSettings::hardware)
-		{
-			m_IsShowingFireMesh = !m_IsShowingFireMesh;
-		}
-	}
-
-	void Renderer::ToggleRenderingSettings()
-	{
-		switch (m_RenderSettings)
-		{
-		case Renderer::RenderingSettings::software:
-			m_RenderSettings = RenderingSettings::hardware;
-			std::cout << "Render setting: Hardware" << std::endl;
-			break;
-		case Renderer::RenderingSettings::hardware:
-			m_RenderSettings = RenderingSettings::software;
-			std::cout << "Render setting: Software" << std::endl;
-			break;
-		default:
-
-			break;
-		}
 	}
 
 	HRESULT Renderer::InitializeDirectX()
@@ -290,20 +209,20 @@ namespace dae {
 		//=====
 		D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_1;
 		uint32_t createDeviceFlags = 0;
-	#if defined(DEBUG) || defined(_DEBUG)
+#if defined(DEBUG) || defined(_DEBUG)
 		// |=  -->  bitwise OR operator combined with assignment
 		//createDeviceFlags = createDeviceFlags | D3D11_CREATE_DEVICE_DEBUG;
 		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
-	#endif
-		HRESULT result = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, 0, createDeviceFlags, &featureLevel, 1, D3D11_SDK_VERSION, 
-										   &m_pDevice, nullptr, &m_pDeviceContext);
-		if (FAILED(result)) 
+#endif
+		HRESULT result = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, 0, createDeviceFlags, &featureLevel, 1, D3D11_SDK_VERSION,
+			&m_pDevice, nullptr, &m_pDeviceContext);
+		if (FAILED(result))
 		{
-			return result; 
+			return result;
 		}
 
 		//Create DXGI Factory
-		IDXGIFactory1* pDxgiFactory{}; 
+		IDXGIFactory1* pDxgiFactory{};
 		//void** --> represents pointer to location that stored another pointer to void
 		result = CreateDXGIFactory1(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&pDxgiFactory));
 		if (FAILED(result))
@@ -314,19 +233,19 @@ namespace dae {
 		//2. Create Swapchain
 		//=====
 		DXGI_SWAP_CHAIN_DESC swapChainDesc{};
-		swapChainDesc.BufferDesc.Width = m_Width; 
-		swapChainDesc.BufferDesc.Height = m_Height; 
-		swapChainDesc.BufferDesc.RefreshRate.Numerator = 1; 
-		swapChainDesc.BufferDesc.RefreshRate.Denominator = 60; 
-		swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; 
-		swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED; 
-		swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED; 
-		swapChainDesc.SampleDesc.Count = 1; 
-		swapChainDesc.SampleDesc.Quality = 0; 
-		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; 
-		swapChainDesc.BufferCount = 1; 
-		swapChainDesc.Windowed = true; 
-		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;  
+		swapChainDesc.BufferDesc.Width = m_Width;
+		swapChainDesc.BufferDesc.Height = m_Height;
+		swapChainDesc.BufferDesc.RefreshRate.Numerator = 1;
+		swapChainDesc.BufferDesc.RefreshRate.Denominator = 60;
+		swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+		swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+		swapChainDesc.SampleDesc.Count = 1;
+		swapChainDesc.SampleDesc.Quality = 0;
+		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		swapChainDesc.BufferCount = 1;
+		swapChainDesc.Windowed = true;
+		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 		swapChainDesc.Flags = 0;
 
 		//Get the handle (HWND) from the SDL backbuffer
@@ -345,15 +264,15 @@ namespace dae {
 		//3. Create DepthStencil (DS) and DepthStencilView (DSV)
 		//=====
 		D3D11_TEXTURE2D_DESC depthStencilDesc{};
-		depthStencilDesc.Width = m_Width; 
-		depthStencilDesc.Height = m_Height; 
-		depthStencilDesc.MipLevels = 1; 
-		depthStencilDesc.ArraySize = 1; 
-		depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; 
-		depthStencilDesc.SampleDesc.Count = 1; 
-		depthStencilDesc.SampleDesc.Quality = 0; 
-		depthStencilDesc.Usage = D3D11_USAGE_DEFAULT; 
-		depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL; 
+		depthStencilDesc.Width = m_Width;
+		depthStencilDesc.Height = m_Height;
+		depthStencilDesc.MipLevels = 1;
+		depthStencilDesc.ArraySize = 1;
+		depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		depthStencilDesc.SampleDesc.Count = 1;
+		depthStencilDesc.SampleDesc.Quality = 0;
+		depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+		depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 		depthStencilDesc.CPUAccessFlags = 0;
 		depthStencilDesc.MiscFlags = 0;
 
@@ -399,11 +318,11 @@ namespace dae {
 		//6. Set Viewport
 		//=====
 		D3D11_VIEWPORT viewport{};
-		viewport.Width = static_cast<float>(m_Width); 
-		viewport.Height = static_cast<float>(m_Height); 
+		viewport.Width = static_cast<float>(m_Width);
+		viewport.Height = static_cast<float>(m_Height);
 		viewport.TopLeftX = 0.f;
-		viewport.TopLeftY = 0.f; 
-		viewport.MinDepth = 0.f; 
+		viewport.TopLeftY = 0.f;
+		viewport.MinDepth = 0.f;
 		viewport.MaxDepth = 1.f;
 		m_pDeviceContext->RSSetViewports(1, &viewport);
 
@@ -411,6 +330,128 @@ namespace dae {
 
 		//hidden resource leak of DXGI factory
 		pDxgiFactory->Release();
+	}
+
+	// -----------------------------
+	//		  TOGGLING PART
+	// -----------------------------
+
+	// Not const because otherwise i cannnot change the SamplerState
+	void Renderer::ToggleSamplerState()
+	{
+		if (m_RasterizerSettings == RasterizerSettings::hardware)
+		{
+			for (auto mesh : m_pMeshObjects)
+			{
+				mesh->ToggleSamplerState();
+			}
+
+			switch (m_Samples)
+			{
+			case SamplerStates::point:
+				m_Samples = SamplerStates::linear;
+				std::cout << "Sampling Filter: D3D11_FILTER_MIN_MAG_MIP_LINEAR" << std::endl;
+				break;
+
+			case SamplerStates::linear:
+				m_Samples = SamplerStates::anisotropic;
+				std::cout << "Sampling Filter: D3D11_FILTER_MIN_MAG_MIP_ANISOTROPIC" << std::endl;
+				break;
+
+			case SamplerStates::anisotropic:
+				m_Samples = SamplerStates::point;
+				std::cout << "Sampling Filter: D3D11_FILTER_MIN_MAG_MIP_POINT" << std::endl;
+				break;
+			}
+		}
+	}
+
+	void Renderer::ToggleShadingModes()
+	{
+		if (m_RasterizerSettings == RasterizerSettings::software)
+		{
+			const int amountOfShadingModes{ 4 }; 
+
+			int temp{ static_cast<int>(m_ShadingMode) }; 
+			m_ShadingMode = static_cast<ShadingModes>((++temp) % amountOfShadingModes); 
+
+			switch (m_ShadingMode)
+			{
+			case dae::Renderer::ShadingModes::cosineLambert:
+				std::cout << "Render Mode: Cosine Lambert Mode" << std::endl;
+				break;
+			case dae::Renderer::ShadingModes::diffuseLambert:
+				std::cout << "Render Mode: Diffuse Lambert Mode" << std::endl;
+				break;
+			case dae::Renderer::ShadingModes::specularPhong:
+				std::cout << "Render Mode: Specular Phong Mode" << std::endl;
+				break;
+			case dae::Renderer::ShadingModes::combined:
+				std::cout << "Render Mode: Combined Mode" << std::endl;
+				break;
+			}
+		}
+	}
+
+	void Renderer::ToggleRotation()
+	{
+		m_IsRotating = !m_IsRotating;
+	}
+
+	void Renderer::ToggleNormalMap()
+	{
+		for (auto mesh : m_pMeshObjects)
+		{
+			mesh->ToggleNormalMap(); 
+		}
+
+		m_IsNormalMapOn = !m_IsNormalMapOn;
+
+		if (m_IsNormalMapOn)
+		{
+			std::cout << "Sample normal map: ON\n";
+		}
+		else
+		{
+			std::cout << "Sample normal map: OFF\n";
+		}
+	}
+
+	void Renderer::ToggleFireMesh()
+	{
+		if (m_RasterizerSettings == RasterizerSettings::hardware)
+		{
+			m_IsShowingFireMesh = !m_IsShowingFireMesh;
+		}
+	}
+
+	void Renderer::ToggleRenderingSettings()
+	{
+		switch (m_RasterizerSettings)
+		{
+		case Renderer::RasterizerSettings::software:
+			m_RasterizerSettings = RasterizerSettings::hardware;
+			std::cout << "Render setting: Hardware" << std::endl;
+			break;
+		case Renderer::RasterizerSettings::hardware:
+			m_RasterizerSettings = RasterizerSettings::software;
+			std::cout << "Render setting: Software" << std::endl;
+			break;
+		default:
+
+			break;
+		}
+	}
+
+	void Renderer::ToggleRenderModes()
+	{
+		if (m_RasterizerSettings == RasterizerSettings::software)
+		{
+			const int amountOfRenderModes{ 2 }; 
+
+			int temp{ static_cast<int>(m_RenderMode) }; 
+			m_RenderMode = static_cast<RenderMode>((++temp) % amountOfRenderModes); 
+		}
 	}
 
 	// -----------------------------
@@ -426,54 +467,55 @@ namespace dae {
 		//clear back buffer
 		SDL_FillRect(m_pBackBuffer, &m_pBackBuffer->clip_rect, SDL_MapRGB(m_pBackBuffer->format, 100, 100, 100));
 
-		for (Mesh* pMesh : m_pMeshObjects) 
-		{
-			if (pMesh->GetIsHardware())
-			{
-				if (pMesh->GetPrimitiveTopology() == PrimitiveTopology::TriangleStrip)
-				{
-					const auto& meshIndices = pMesh->GetMeshIndices();
-					auto& meshVerticesOut = pMesh->GetMeshVerticesOut();
-					
-					//extra variable; amount of sides : 0, 1, 2
-					const auto& maxIdx{ pMesh->GetMeshIndices().size() - 2 };
+		//for (Mesh* pMesh : m_pMeshObjects) 
+		//{
+		//	if (pMesh->GetIsHardware())
+		//	{
+		//		if (pMesh->GetPrimitiveTopology() == PrimitiveTopology::TriangleStrip)
+		//		{
+		//			const auto& meshIndices = pMesh->GetMeshIndices();
+		//			auto& meshVerticesOut = pMesh->GetMeshVerticesOut();
+		//			
+		//			//extra variable; amount of sides : 0, 1, 2
+		//			const auto& maxIdx{ pMesh->GetMeshIndices().size() - 2 };
 
-					//go over triangle, per 3 vertices
-					for (size_t triangleIdx = 0; triangleIdx < meshIndices.size(); triangleIdx += 3) 
-					{
-						const Vertex_Out& v0 = meshVerticesOut[meshIndices[triangleIdx + 0]]; 
-						Vertex_Out& v1 = meshVerticesOut[meshIndices[triangleIdx + 1]];  
-						Vertex_Out& v2 = meshVerticesOut[meshIndices[triangleIdx + 2]]; 
+		//			//go over triangle, per 3 vertices
+		//			for (size_t triangleIdx = 0; triangleIdx < meshIndices.size(); triangleIdx += 3) 
+		//			{
+		//				const Vertex_Out& v0 = meshVerticesOut[meshIndices[triangleIdx + 0]]; 
+		//				Vertex_Out& v1 = meshVerticesOut[meshIndices[triangleIdx + 1]];  
+		//				Vertex_Out& v2 = meshVerticesOut[meshIndices[triangleIdx + 2]]; 
 
-						//if it's odd (oneven)
-						if (triangleIdx & 1 and pMesh->GetPrimitiveTopology() == PrimitiveTopology::TriangleStrip) 
-						{
-							//swap variables, make triangle counter-clockwise
-							v1 = { meshVerticesOut[meshIndices[triangleIdx + 2]] }; 
-							v2 = { meshVerticesOut[meshIndices[triangleIdx + 1]] }; 
-						}
+		//				//if it's odd (oneven)
+		//				if (triangleIdx & 1 and pMesh->GetPrimitiveTopology() == PrimitiveTopology::TriangleStrip) 
+		//				{
+		//					//swap variables, make triangle counter-clockwise
+		//					v1 = { meshVerticesOut[meshIndices[triangleIdx + 2]] }; 
+		//					v2 = { meshVerticesOut[meshIndices[triangleIdx + 1]] }; 
+		//				}
 
-						TriangleHandeling(v0, v1, v2, pMesh);
-					}
-				}
-				else if (pMesh->GetPrimitiveTopology() == PrimitiveTopology::TriangleList)
-				{
-					const auto& meshIndices = pMesh->GetMeshIndices();
-					const auto& meshVerticesOut = pMesh->GetMeshVerticesOut();
+		//				TriangleHandeling(v0, v1, v2, pMesh);
+		//			}
+		//		}
+		//		else if (pMesh->GetPrimitiveTopology() == PrimitiveTopology::TriangleList)
+		//		{
+		//			const auto& meshIndices = pMesh->GetMeshIndices();
+		//			const auto& meshVerticesOut = pMesh->GetMeshVerticesOut();
 
-					// Assuming GetMeshIndices() always contains a multiple of 3 indices
-					for (size_t triangleIdx = 0; triangleIdx < meshIndices.size(); triangleIdx += 3) 
-					{
-						const Vertex_Out& v0 = meshVerticesOut[meshIndices[triangleIdx + 0]]; 
-						const Vertex_Out& v1 = meshVerticesOut[meshIndices[triangleIdx + 1]]; 
-						const Vertex_Out& v2 = meshVerticesOut[meshIndices[triangleIdx + 2]]; 
+		//			// Assuming GetMeshIndices() always contains a multiple of 3 indices
+		//			for (size_t triangleIdx = 0; triangleIdx < meshIndices.size(); triangleIdx += 3) 
+		//			{
+		//				const Vertex_Out& v0 = meshVerticesOut[meshIndices[triangleIdx + 0]]; 
+		//				const Vertex_Out& v1 = meshVerticesOut[meshIndices[triangleIdx + 1]]; 
+		//				const Vertex_Out& v2 = meshVerticesOut[meshIndices[triangleIdx + 2]]; 
 
-						//go over triangle, per 3 vertices
-						TriangleHandeling(v0, v1, v2, pMesh);
-					}
-				}
-			}
-		}
+		//				//go over triangle, per 3 vertices
+		//				TriangleHandeling(v0, v1, v2, pMesh);
+		//			}
+		//		}
+		//	}
+		//}
+
 	}
 
 	void Renderer::VertexTransformationFunction(const std::vector<Mesh*>& meshes_in) const
@@ -483,7 +525,7 @@ namespace dae {
 			const Matrix worldMatrix{ pMesh->GetWorldMatrix() };
 			const Matrix worldViewProjectionMatrix{ worldMatrix * m_pCamera->GetViewMatrix() * m_pCamera->GetProjectionMatrix() }; 
 
-			pMesh->GetMeshVertices().clear();
+			pMesh->GetMeshVerticesOut().clear();
 			auto& meshVerticesOut = pMesh->GetMeshVerticesOut();
 			meshVerticesOut.reserve(pMesh->GetMeshVertices().size());
 
@@ -547,6 +589,10 @@ namespace dae {
 		const int maxX{ Clamp(static_cast<int>(bottomRightX + boundingBoxScale), 0, m_Width) };
 		const int maxY{ Clamp(static_cast<int>(bottomRightY + boundingBoxScale), 0, m_Height) };
 
+		const Vector2 v0_xy = v0.position.GetXY();
+		const Vector2 v1_xy = v1.position.GetXY();
+		const Vector2 v2_xy = v2.position.GetXY(); 
+
 		//go over each pixel is in screen space
 		for (int px{ minX }; px < maxX; ++px)
 		{
@@ -555,9 +601,9 @@ namespace dae {
 				//define current pixel in screen space
 				const Vector2 p{ px + 0.5f, py + 0.5f };
 
-				float w0{ Vector2::Cross(v2_v1, p - v1.position.GetXY()) };
-				float w1{ Vector2::Cross(v0_v2, p - v2.position.GetXY()) };
-				float w2{ Vector2::Cross(v1_v0, p - v0.position.GetXY()) };
+				float w0{ Vector2::Cross(v2_v1, p - v1_xy) };
+				float w1{ Vector2::Cross(v0_v2, p - v2_xy) };
+				float w2{ Vector2::Cross(v1_v0, p - v0_xy) };
 
 				if (w0 >= 0.f && w1 >= 0.f && w2 >= 0.f)
 				{
@@ -652,7 +698,7 @@ namespace dae {
 				finalColour = PixelShading(vertexOut);
 				break;
 			case RenderMode::depthBuffer:
-				zBufferValue = Remap(zBufferValue, 0.9975f, 1.f);
+				zBufferValue = Remap(zBufferValue, 0.995f, 1.f);
 				finalColour = ColorRGB{ zBufferValue, zBufferValue, zBufferValue };
 				break;
 			}
@@ -700,7 +746,16 @@ namespace dae {
 																  Vector3{ 1.f, 1.f, 1.f }).Normalized();
 
 		// Calculate observed area
-		observedArea = m_IsNormalMapOn ? Vector3::Dot(sampledNormal, -lightDirection) : Vector3::Dot(v.normal, -lightDirection);
+		if (m_IsNormalMapOn)
+		{
+			//observed area
+			observedArea = Vector3::Dot(sampledNormal, -lightDirection);
+		}
+		else
+		{
+			//observed area
+			observedArea = Vector3::Dot(v.normal, -lightDirection);
+		}
 
 		if (observedArea <= 0)
 		{
@@ -736,4 +791,25 @@ namespace dae {
 
 		return finalColour;
 	}
-}
+
+	// -----------------------------
+	//		PRINTING INFO PART
+	// -----------------------------
+	void Renderer::PrintingInfo() const
+	{
+		std::cout << "" << std::endl;
+		
+		std::cout << RED_COLOR_TEXT << "[KEY BINDINGS - SHARED]" << std::endl;  
+		std::cout << "\t [F1] Toggle Rasterizing Settings (HARDWARE/SOFTWARE)" << std::endl; 
+		std::cout << "\t [F5] Toggle Rotation (ON/OFF)" << std::endl; 
+		std::cout << "\t [F6] Toggle Normal Map (ON/OFF)" << RESET_COLOR_TEXT << std::endl << std::endl; 
+
+		std::cout << BLUE_COLOR_TEXT << "[KEY BINDINGS - HARDWARE]" << std::endl; 
+		std::cout << "\t [F4] Cycle Sampler State (POINT/LINEAR/ANISOTROPIC)" << std::endl;
+		std::cout << "\t [F7] Toggle FireFX (ON/OFF)" << RESET_COLOR_TEXT << std::endl << std::endl; 
+
+		std::cout << GREEN_COLOR_TEXT << "[KEY BINDINGS - SOFTWARE]" << std::endl;
+		std::cout << "\t [F2] Cycle Shading Modes (COMBINED/OBSERVED AREA/DIFFUSE/SPECULAR)" << std::endl;
+		std::cout << "\t [F3] Toggle Render Modes (FINAL COLOUR/DEPTH BUFFER)" << RESET_COLOR_TEXT << std::endl << std::endl; 
+	}
+}	

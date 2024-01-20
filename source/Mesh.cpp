@@ -127,6 +127,7 @@ void Mesh::ToggleNormalMap()
 void Mesh::RotateMesh(float rotation)
 {
 	m_RotationMatrix = Matrix::CreateRotationY(rotation) * m_RotationMatrix;
+	m_WorldMatrix = m_ScaleMatrix * m_RotationMatrix * m_TranslationMatrix; 
 }
 
 void Mesh::VertexAndInputCreation(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData)

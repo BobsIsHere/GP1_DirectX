@@ -61,32 +61,36 @@ int main(int argc, char* args[])
 				{
 					pRenderer->ToggleRenderingSettings();
 				}
+				else if (e.key.keysym.scancode == SDL_SCANCODE_F5) 
+				{
+					pRenderer->ToggleRotation(); 
+				}
+				else if (e.key.keysym.scancode == SDL_SCANCODE_F6) 
+				{
+					//Show Normal Map
+					pRenderer->ToggleNormalMap(); 
+				}
 
 				// HARDWARE SETTINGS
 				else if (e.key.keysym.scancode == SDL_SCANCODE_F4)
 				{
 					pRenderer->ToggleSamplerState();
 				}
-				else if (e.key.keysym.scancode == SDL_SCANCODE_F5)  
-				{
-					pRenderer->ToggleRotation();
-				}
-				else if (e.key.keysym.scancode == SDL_SCANCODE_F6) 
-				{
-					//Show Normal Map
-					pRenderer->ToggleNormalMap();
-				}
 				else if (e.key.keysym.scancode == SDL_SCANCODE_F7) 
 				{
 					pRenderer->ToggleFireMesh();
 				}
-				else if (e.key.keysym.scancode == SDL_SCANCODE_F8) 
+
+				//SOFTWARE SETTINGS
+				else if (e.key.keysym.scancode == SDL_SCANCODE_F2) 
 				{
 					//CosineLambert -> DiffuseLambert -> SpecularPhong -> Combined
 					pRenderer->ToggleShadingModes();
 				}
-
-				//SOFTWARE SETTINGS
+				else if (e.key.keysym.scancode == SDL_SCANCODE_F3) 
+				{
+					pRenderer->ToggleRenderModes();
+				}
 
 				break;
 			default: ;

@@ -29,21 +29,21 @@ namespace dae
 		TriangleStrip
 	};
 
-
 	class Mesh final
 	{
 	public:
-		Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData, Effect* pEffect, bool isHardware,
+		// CONSTRUCTOR AND DESTRUCTOR
+		Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData, Effect* pEffect, bool isSoftware,
 			 Matrix worldMatrix = Matrix{ Vector4{1, 0, 0, 0}, Vector4{0, 1, 0, 0}, Vector4{0, 0, 1, 0}, Vector4{0, 0, 0, 1} });
 		~Mesh();
 
-		//Rule of Five
+		// RULE OF FIVE
 		Mesh(const Mesh& other) = delete;
 		Mesh& operator=(const Mesh& other) = delete;
 		Mesh(Mesh&& other) noexcept = delete;
 		Mesh& operator=(Mesh&& other) noexcept = delete;
 
-		//Hardware Member Functions
+		// HARDWARE MEMBER FUNCTIONS
 		void Render(ID3D11DeviceContext* pDeviceContext, Matrix worldViewProjectionMatrix);
 		void SetWorldMatrix(); 
 		void SetWVPMatrix(Matrix worldViewProj);
@@ -53,17 +53,17 @@ namespace dae
 		void RotateMesh(float rotation);
 
 		Matrix GetWorldMatrix() const;
-		Effect* GetEffect() const { return m_pEffect; };
-		bool GetIsHardware() const { return m_IsHardware; };
+		Effect* GetEffect() const;
+		bool GetIsInSoftwareMode() const;
 
-		//Software Member Functions
-		std::vector<Vertex_PosCol> GetMeshVertices();
-		std::vector<uint32_t> GetMeshIndices(); 
-		PrimitiveTopology GetPrimitiveTopology();
-		std::vector<Vertex_Out>& GetMeshVerticesOut();
+		// SOFTWARE MEMBER FUNCTIONS
+		std::vector<Vertex_PosCol> GetMeshVertices() const;
+		std::vector<uint32_t> GetMeshIndices() const; 
+		PrimitiveTopology GetPrimitiveTopology() const;
+		std::vector<Vertex_Out>& GetMeshVerticesOut(); 
 
 	private:
-		//Hardware Member Variables
+		// HARDWARE MEMBER VARIABLES
 		Effect* m_pEffect;
 		ID3DX11EffectTechnique* m_pTechnique;
 		ID3D11InputLayout* m_pInputLayout;
@@ -77,15 +77,15 @@ namespace dae
 		Matrix m_RotationMatrix;
 		Matrix m_ScaleMatrix;
 
-		//Software Member Variables
+		// SOFTWARE MEMBER VARIABLES
 		std::vector<Vertex_PosCol> m_Vertices{};
 		std::vector<uint32_t> m_Indices{};
-		PrimitiveTopology m_PrimitiveTopology{ PrimitiveTopology::TriangleList };
+		PrimitiveTopology m_PrimitiveTopology{ PrimitiveTopology::TriangleList }; 
 		std::vector<Vertex_Out> m_VerticesOut{};
 
-		bool m_IsHardware{ true }; 
+		bool m_IsInSoftwareMode{ true }; 
 
-		//Member Functions
+		// MEMBER FUNCTION
 		void VertexAndInputCreation(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData);
 	};
 }

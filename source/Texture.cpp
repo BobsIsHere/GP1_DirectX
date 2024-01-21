@@ -83,7 +83,7 @@ Texture* Texture::LoadTexture(const std::string& path, ID3D11Device* pDevice)
 	return pTexture;  
 }
 
-ID3D11ShaderResourceView* Texture::GetShaderResourceView()
+ID3D11ShaderResourceView* Texture::GetShaderResourceView() const
 {
 	return m_pSRV;
 }

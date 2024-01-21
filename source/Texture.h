@@ -5,28 +5,29 @@ namespace dae
 	class Texture
 	{
 	public:
+		// CONSTRUCTOR AND DESTRUCTOR
 		Texture(SDL_Surface* pSurface, ID3D11Device* pDevice);
 		~Texture();
 
-		//Rule of Five
+		// RULE OF FIVE
 		Texture(const Texture& other) = delete;
 		Texture& operator=(const Texture& other) = delete;
 		Texture(Texture&& other) noexcept = delete;
 		Texture& operator=(Texture&& other) noexcept = delete;
 
-		//Software Member Functions
+		// SOFTWARE MEMBER FUNCTION
 		ColorRGB Sample(const Vector2& uv) const;
 
-		//Hardware Member Functions
+		// HARDWARE MEMBER FUNCTIONS
 		static Texture* LoadTexture(const std::string& path, ID3D11Device* pDevice);
-		ID3D11ShaderResourceView* GetShaderResourceView();
+		ID3D11ShaderResourceView* GetShaderResourceView() const;
 
 	private:
-		//Software Member Variables
+		// SOFTWARE MEMBER VARIABLES
 		SDL_Surface* m_pSurface{ nullptr };
 		uint32_t* m_pSurfacePixels{ nullptr };
 
-		//Hardware Member Variables
+		// HARDWARE MEMBER VARIABLES
 		ID3D11Texture2D* m_pResource;
 		ID3D11ShaderResourceView* m_pSRV;
 	};

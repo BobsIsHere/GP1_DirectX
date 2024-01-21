@@ -4,10 +4,11 @@ namespace dae
 	class Effect
 	{
 	public:
+		// CONSTRUCTOR AND DESTRUCTOR
 		Effect(ID3D11Device* pDevice, const std::wstring& assetFile);
 		virtual ~Effect();
 
-		//Rule of Five
+		// RULE OF FIVE
 		Effect(const Effect& other) = delete;
 		Effect& operator=(const Effect& other) = delete;
 		Effect(Effect&& other) noexcept = delete;
@@ -20,7 +21,7 @@ namespace dae
 			anisotropic
 		};
 
-		//Member Functions
+		// MEMBER FUNCTIONS
 		virtual ID3DX11EffectTechnique* GetTechnique() const;
 		virtual ID3DX11EffectMatrixVariable* GetMatWorldViewProjVariable() const;
 		virtual ID3D11SamplerState* GetCurrentSamplerState() const;
@@ -32,10 +33,10 @@ namespace dae
 		virtual void ToggleSamplerState();
 
 	protected:
-		//Member Functions
+		// MEMBER FUNCTIONS
 		virtual ID3DX11Effect* LoadEffect(ID3D11Device* pDevice, const std::wstring& assetFile);
 
-		//Member Variables
+		// MEMBER VARIABLES
 		ID3DX11Effect* m_pEffect;
 		ID3DX11EffectTechnique* m_pTechnique;
 

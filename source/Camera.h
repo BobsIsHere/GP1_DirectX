@@ -5,16 +5,17 @@ namespace dae
 	class Camera final
 	{
 	public:
+		// CONSTRUCTOR AND DESTRUCTOR
 		Camera(const Vector3& origin, float fovAngle, float nearPlane, float farPlane, float aspectRatio);
 		~Camera();
 
-		//Rule of Five
+		// RULE OF FIVE
 		Camera(const Camera& other) = delete;
 		Camera& operator=(const Camera& other) = delete;
 		Camera(Camera&& other) noexcept = delete;
 		Camera& operator=(Camera&& other) noexcept = delete;
 
-		//Member Functions
+		// MEMBER FUNCTIONS
 		void Update(const Timer* pTimer);
 		Matrix GetViewMatrix() const;
 		Matrix GetProjectionMatrix() const;
@@ -22,11 +23,11 @@ namespace dae
 		Vector3 GetCameraOrigin() const;
 
 	private:
-		//Member Variables
+		// MEMBER VARIABLES
 		const float m_ZN;
 		const float m_ZF;
-		float m_FOV;
-		float m_AspectRatio;
+		const float m_AspectRatio;
+		const float m_FOV;
 		float m_TotalPitch;
 		float m_TotalYaw;
 
@@ -39,7 +40,7 @@ namespace dae
 		Matrix m_ViewMatrix{};
 		Matrix m_ProjectionMatrix{};
 
-		//Member Functions
+		// MEMBER FUNCTIONS
 		void CalculateViewMatrix();
 		void CalculateProjectionMatrix();
 	};

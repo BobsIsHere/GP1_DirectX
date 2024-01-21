@@ -6,11 +6,10 @@ dae::Camera::Camera(const Vector3& origin, float fovAngle, float nearPlane, floa
 	m_ZF{ farPlane },
 	m_Origin{ origin },
 	m_AspectRatio{ aspectRatio }, 
+	m_FOV{ tanf((fovAngle * TO_RADIANS) / 2.f) },
 	m_TotalPitch{},
 	m_TotalYaw{}
 {
-	m_FOV = tanf((fovAngle * TO_RADIANS) / 2.f);
-
 	m_Forward = Vector3::UnitZ;  
 	m_Right = Vector3::UnitX;  
 	m_Up = Vector3::UnitY;  

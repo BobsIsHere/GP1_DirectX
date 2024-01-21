@@ -43,8 +43,10 @@ namespace dae {
 			std::cout << "DirectX initialization failed!\n";
 		}
 
+		//Make Camera
 		m_pCamera = new Camera{ {0.f, 0.f, -50.f}, 45.f, 0.1f, 1000.f, float(m_Width) / m_Height }; 
 
+		//Make Effects
 		m_pEffectVehicle = new EffectVehicle{ m_pDevice, L"Resources/DefaultShader.fx" };
 		m_pEffectFire = new EffectFire{ m_pDevice, L"Resources/FlatShader.fx" };
 
@@ -128,18 +130,21 @@ namespace dae {
 	{
 		m_pCamera->Update(pTimer); 
 		
-		//variables
+		//Variables
 		const float yaw{ (pTimer->GetElapsed() * 45.f) * TO_RADIANS }; 
 		const Matrix rotation{ Matrix::CreateRotationY(yaw) };
 
+		//Check if it needs to be rotating
 		if (m_IsRotating)
 		{
+			//Rotate Mesh
 			for (auto mesh : m_pMeshObjects)
 			{
 				mesh->RotateMesh(yaw);
 			}
 		}
 
+		//Set Camera Position
 		for (auto mesh : m_pMeshObjects)
 		{
 			mesh->SetCameraPosition(m_pCamera->GetCameraOrigin());
@@ -191,6 +196,7 @@ namespace dae {
 		//Render Vehicle Mesh
 		m_pMeshObjects[0]->Render(m_pDeviceContext, worldViewProjectionMatrix); 
 
+		//Check if Fire Mesh needs to be visible
 		if (m_IsShowingFireMesh)
 		{
 			//first make view projection matrix
@@ -346,6 +352,7 @@ namespace dae {
 				mesh->ToggleSamplerState();
 			}
 
+			//Sampler State to check what I need to print out
 			switch (m_Samples)
 			{
 			case SamplerStates::point:
@@ -459,63 +466,37 @@ namespace dae {
 	// -----------------------------
 	void Renderer::Render_Software() const
 	{
-		//from world to view to projection to screen space
+		//From World to View to Projection to Screen space
 		VertexTransformationFunction(m_pMeshObjects);
 
 		std::fill_n(m_pDepthBufferPixels, m_Width * m_Height, FLT_MAX);
 
-		//clear back buffer
+		//Clear back buffer
 		SDL_FillRect(m_pBackBuffer, &m_pBackBuffer->clip_rect, SDL_MapRGB(m_pBackBuffer->format, 100, 100, 100));
 
-		//for (Mesh* pMesh : m_pMeshObjects) 
-		//{
-		//	if (pMesh->GetIsHardware())
-		//	{
-		//		if (pMesh->GetPrimitiveTopology() == PrimitiveTopology::TriangleStrip)
-		//		{
-		//			const auto& meshIndices = pMesh->GetMeshIndices();
-		//			auto& meshVerticesOut = pMesh->GetMeshVerticesOut();
-		//			
-		//			//extra variable; amount of sides : 0, 1, 2
-		//			const auto& maxIdx{ pMesh->GetMeshIndices().size() - 2 };
+		for (Mesh* pMesh : m_pMeshObjects) 
+		{
+			// Check if Mesh needs to be loaded in Software mode
+			if (pMesh->GetIsInSoftwareMode()) 
+			{
+				if (pMesh->GetPrimitiveTopology() == PrimitiveTopology::TriangleList)
+				{
+					const auto& meshIndices = pMesh->GetMeshIndices();
+					const auto& meshVerticesOut = pMesh->GetMeshVerticesOut();
 
-		//			//go over triangle, per 3 vertices
-		//			for (size_t triangleIdx = 0; triangleIdx < meshIndices.size(); triangleIdx += 3) 
-		//			{
-		//				const Vertex_Out& v0 = meshVerticesOut[meshIndices[triangleIdx + 0]]; 
-		//				Vertex_Out& v1 = meshVerticesOut[meshIndices[triangleIdx + 1]];  
-		//				Vertex_Out& v2 = meshVerticesOut[meshIndices[triangleIdx + 2]]; 
+					// Assuming GetMeshIndices() always contains a multiple of 3 indices
+					for (size_t triangleIdx = 0; triangleIdx < meshIndices.size(); triangleIdx += 3) 
+					{
+						const Vertex_Out& v0 = meshVerticesOut[meshIndices[triangleIdx + 0]]; 
+						const Vertex_Out& v1 = meshVerticesOut[meshIndices[triangleIdx + 1]]; 
+						const Vertex_Out& v2 = meshVerticesOut[meshIndices[triangleIdx + 2]]; 
 
-		//				//if it's odd (oneven)
-		//				if (triangleIdx & 1 and pMesh->GetPrimitiveTopology() == PrimitiveTopology::TriangleStrip) 
-		//				{
-		//					//swap variables, make triangle counter-clockwise
-		//					v1 = { meshVerticesOut[meshIndices[triangleIdx + 2]] }; 
-		//					v2 = { meshVerticesOut[meshIndices[triangleIdx + 1]] }; 
-		//				}
-
-		//				TriangleHandeling(v0, v1, v2, pMesh);
-		//			}
-		//		}
-		//		else if (pMesh->GetPrimitiveTopology() == PrimitiveTopology::TriangleList)
-		//		{
-		//			const auto& meshIndices = pMesh->GetMeshIndices();
-		//			const auto& meshVerticesOut = pMesh->GetMeshVerticesOut();
-
-		//			// Assuming GetMeshIndices() always contains a multiple of 3 indices
-		//			for (size_t triangleIdx = 0; triangleIdx < meshIndices.size(); triangleIdx += 3) 
-		//			{
-		//				const Vertex_Out& v0 = meshVerticesOut[meshIndices[triangleIdx + 0]]; 
-		//				const Vertex_Out& v1 = meshVerticesOut[meshIndices[triangleIdx + 1]]; 
-		//				const Vertex_Out& v2 = meshVerticesOut[meshIndices[triangleIdx + 2]]; 
-
-		//				//go over triangle, per 3 vertices
-		//				TriangleHandeling(v0, v1, v2, pMesh);
-		//			}
-		//		}
-		//	}
-		//}
-
+						//go over triangle, per 3 vertices
+						TriangleHandeling(v0, v1, v2, pMesh);
+					}
+				}
+			}
+		}
 	}
 
 	void Renderer::VertexTransformationFunction(const std::vector<Mesh*>& meshes_in) const

@@ -4,7 +4,7 @@
 
 using namespace dae;
 
-Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData, Effect* pEffect, bool isHardware, Matrix worldMatrix) :
+Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, const std::vector<uint32_t> indexData, Effect* pEffect, bool isSoftware, Matrix worldMatrix) :
 	m_NumIndices{},
 	m_pIndexBuffer{},
 	m_pInputLayout{},
@@ -15,7 +15,7 @@ Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertexData, 
 {
 	m_pTechnique = m_pEffect->GetTechnique();
 
-	m_IsHardware = isHardware;
+	m_IsInSoftwareMode = isSoftware;
 
 	// Vertex / Input Layout and Buffer
 	VertexAndInputCreation(pDevice, vertexData, indexData);
@@ -88,17 +88,27 @@ Matrix Mesh::GetWorldMatrix() const
 	return m_WorldMatrix;
 }
 
-std::vector<Vertex_PosCol> Mesh::GetMeshVertices()
+Effect* dae::Mesh::GetEffect() const
+{
+	return m_pEffect;
+}
+
+bool dae::Mesh::GetIsInSoftwareMode() const
+{
+	return m_IsInSoftwareMode;
+}
+
+std::vector<Vertex_PosCol> Mesh::GetMeshVertices() const
 {
 	return m_Vertices;
 }
 
-std::vector<uint32_t> Mesh::GetMeshIndices()
+std::vector<uint32_t> Mesh::GetMeshIndices() const
 {
 	return m_Indices;
 }
 
-PrimitiveTopology Mesh::GetPrimitiveTopology()
+PrimitiveTopology Mesh::GetPrimitiveTopology() const
 {
 	return m_PrimitiveTopology;
 }

@@ -16,24 +16,17 @@ namespace dae
 	class Renderer final
 	{
 	public:
+		// CONSTRUCTOR AND DESTRUCTOR
 		Renderer(SDL_Window* pWindow);
 		~Renderer();
 
+		// RULE OF FIVE
 		Renderer(const Renderer& other) = delete;
 		Renderer& operator=(const Renderer& other) = delete;
 		Renderer(Renderer&& other) noexcept = delete;
 		Renderer& operator=(Renderer&& other) noexcept = delete;
 
-		void Update(const Timer* pTimer);
-		void Render() const;
-		void ToggleSamplerState();
-		void ToggleShadingModes();
-		void ToggleRotation();
-		void ToggleNormalMap();
-		void ToggleFireMesh();
-		void ToggleRenderingSettings();
-		void ToggleRenderModes();
-
+		// ENUMS
 		enum class RasterizerSettings
 		{
 			software,
@@ -61,8 +54,19 @@ namespace dae
 			combined
 		};
 
+		// MEMBER FUNCTIONS
+		void Update(const Timer* pTimer);
+		void Render() const;
+		void ToggleSamplerState();
+		void ToggleShadingModes();
+		void ToggleRotation();
+		void ToggleNormalMap();
+		void ToggleFireMesh();
+		void ToggleRenderingSettings();
+		void ToggleRenderModes();
+
 	private:
-		//SHARED VARIABLES
+		// SHARED VARIABLES
 		SDL_Window* m_pWindow{};
 
 		Texture* m_pDiffuseTexture; 
@@ -77,7 +81,7 @@ namespace dae
 		bool m_IsRotating{ false };
 		bool m_IsNormalMapOn{ true };
 
-		//HARDWARE VARIABLES
+		// HARDWARE VARIABLES
 		int m_Width{};
 		int m_Height{};
 
@@ -100,7 +104,7 @@ namespace dae
 
 		Texture* m_pFireTexture;
 
-		//SOFTWARE VARIABLES
+		// SOFTWARE VARIABLES
 		RenderMode m_RenderMode{ RenderMode::finalColour };
 
 		SDL_Surface* m_pFrontBuffer{ nullptr };
@@ -109,12 +113,12 @@ namespace dae
 
 		float* m_pDepthBufferPixels{};
 
-		//DIRECTX FUNCTIONS
+		// DIRECTX FUNCTIONS
 		void Render_Hardware() const;
 
 		HRESULT InitializeDirectX();
 
-		//SOFTWARE FUNCTIONS
+		// SOFTWARE FUNCTIONS
 		void Render_Software() const;
 		void VertexTransformationFunction(const std::vector<Mesh*>& meshes_in) const;
 		void TriangleHandeling(const Vertex_Out& v0, const Vertex_Out& v1, const Vertex_Out& v2, Mesh* mesh_transformed) const;
@@ -123,7 +127,7 @@ namespace dae
 		float Remap(float value, float inputMin, float inputMax) const;
 		ColorRGB PixelShading(const Vertex_Out& v) const;
 
-		//MEMBER FUCTIONS
+		// MEMBER FUCTIONS
 		void PrintingInfo() const;
 	};
 }
